@@ -18,6 +18,22 @@ refactoring your tests is Don't Repeat Yourself (DRY). **Drying up your tests**.
 The parts of a test that you want to see in *it()* are the parts that differ between tests. Do your best to hide away
 whatever is the same and proudly display what differs.
 
+A good test has three distinct sections:
+- Arrange: Sets up test dependencies
+- Act: Executes production code under test
+- Assert: Checks expectations are met
+
+A great test is not just good but is also the following:
+- Short
+- Descriptive
+- Independent of other tests
+- Has no side-effects
+
+The steps of the TDD cycle are as follows:
+1. Write a failing test: Write a test and watch it fail. If it doesn’t fail, then it's not a good test ->
+2. Make it pass: Do the simplest thing that will work. Feel free o make a mess; you can clean it up later ->
+3. Refactor your code: Slow down, and resist the urge to move on to the next feature.
+
 ### Commit early and often
 If you’re starting out with TDD, I’d recommend committing to source control after every single test.
 That might seem like overkill for your projects at work, but as you're learning, it can be a very effective tool.

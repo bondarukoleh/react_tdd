@@ -1,9 +1,11 @@
 import React, {Fragment} from 'react';
 
 export const Appointment = props => {
-  const {customer: {firstName}} = props;
+  const {customer, startsAt} = props;
 
-  return <Fragment>
-    <div>{firstName}</div>
-  </Fragment>
+  return <li>
+        <p>Name: {customer?.firstName}</p>
+        <p>Starts at: {startsAt}</p>
+    </li>
 }
+
