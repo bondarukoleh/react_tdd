@@ -5,7 +5,7 @@ export const AppointmentsDayView = ({appointments}) => {
   return <Fragment>
     <div id={'appointmentsDayView'}>
       <ol>
-        {appointments.map((elem, index) => {
+        {appointments.map((elem) => {
           return <Appointment
               key={elem.startsAt}
               customer={elem.customer}
