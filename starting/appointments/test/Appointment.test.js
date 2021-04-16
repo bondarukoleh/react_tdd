@@ -43,6 +43,18 @@ describe('AppointmentsDayView', function () {
     expect(container.querySelector('#appointmentsDayView')).not.toBeNull();
   });
 
+  it('initially shows a message saying there are no appointments today', () => {
+  render(<AppointmentsDayView appointments={[]} />, container);
+  expect(container.textContent).toMatch(
+    'There are no appointments scheduled for today.'
+  );
+});
+
+  it('selects the first appointment by default', () => {
+    render(<AppointmentsDayView appointments={appointments} />, container);
+    expect(container.textContent).toMatch('Ashley');
+  });
+
   it('should renders appointments', () => {
     render(<AppointmentsDayView appointments={appointments} />, container)
     expect(container.querySelector('ol')).not.toBeNull();
