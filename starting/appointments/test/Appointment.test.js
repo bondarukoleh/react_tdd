@@ -3,7 +3,7 @@ import ReactTestUtils from 'react-dom/test-utils';
 import {render} from 'react-dom';
 import {Appointment} from '../src/Appointment';
 import {AppointmentsDayView} from '../src/AppointmentsDayView';
-import {makeId} from "../helpers/general";
+import {makeId} from "../src/helpers/general";
 
 describe('Appointment', function () {
   let container;
