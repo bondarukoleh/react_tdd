@@ -1,7 +1,9 @@
 import React from 'react';
+import ReactTestUtils from 'react-dom/test-utils';
 import {render} from 'react-dom';
 import {Appointment} from '../src/Appointment';
 import {AppointmentsDayView} from '../src/AppointmentsDayView';
+import {makeId} from "../helpers/general";
 
 describe('Appointment', function () {
   let container;
@@ -30,8 +32,8 @@ describe('Appointment', function () {
 describe('AppointmentsDayView', function () {
   let container;
   const appointments = [
-    {startsAt: new Date().setHours(12, 0), customer: {firstName: 'Ashley'}},
-    {startsAt: new Date().setHours(13, 0), customer: {firstName: 'Jourdan'}}
+    {startsAt: new Date().setHours(12, 0), customer: {firstName: 'Ashley'}, id: makeId()},
+    {startsAt: new Date().setHours(13, 0), customer: {firstName: 'Jourdan'}, id: makeId()}
   ]
 
   beforeEach(() => {
@@ -52,7 +54,7 @@ describe('AppointmentsDayView', function () {
 
   it('selects the first appointment by default', () => {
     render(<AppointmentsDayView appointments={appointments} />, container);
-    expect(container.textContent).toMatch('Ashley');
+    expect(container.querySelector('#appointment').textContent).toMatch(appointments[0].customer.firstName);
   });
 
   it('should renders appointments', () => {
@@ -68,5 +70,22 @@ describe('AppointmentsDayView', function () {
       .toContain('12:00');
     expect(container.querySelectorAll('li')[1].textContent)
       .toContain('13:00');
+  });
+
+  it('has a button element in each li', () => {
+    render(<AppointmentsDayView appointments={appointments} />, container);
+    expect(
+      container.querySelectorAll('li > button')
+    ).toHaveLength(2);
+    expect(
+      container.querySelectorAll('li > button')[0].type
+    ).toEqual('button');
+  });
+
+  it('click on appointment shows corresponded one', () => {
+    render(<AppointmentsDayView appointments={appointments} />, container);
+    const button = container.querySelector('#appointmentsDayView').querySelectorAll('button')[1];
+    ReactTestUtils.Simulate.click(button);
+    expect(container.querySelector('#appointment').innerHTML).toMatch(appointments[1].customer.firstName);
   });
 });

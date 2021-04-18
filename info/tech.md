@@ -43,3 +43,7 @@ As we're using both *ReactDOM* and *JSX*, we'll need to include the two standard
 import React from 'react';
 import ReactDOM from 'react-dom';
 ```
+
+React components interoperate to **synthetic events**. React uses these to mask browser variability in
+the DOM event model. That means we can't raise standard events that we'd fire through JSDOM.
+Instead, we use the `ReactTestUtils.Simulate` object to raise events.
