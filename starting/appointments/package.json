@@ -2,11 +2,12 @@
   "name": "appointments",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "./src/index.js",
   "scripts": {
     "test": "jest",
     "test-w": "jest --watchAll",
-    "build": "webpack"
+    "build": "webpack",
+    "wds": "webpack serve"
   },
   "keywords": [],
   "author": "",
@@ -16,14 +17,21 @@
     "@babel/plugin-transform-runtime": "7.13.15",
     "@babel/preset-env": "7.13.15",
     "@babel/preset-react": "7.13.13",
+    "@babel/preset-typescript": "7.13.0",
+    "@types/jest": "26.0.22",
     "babel-loader": "8.2.2",
     "html-webpack-plugin": "^5.3.1",
     "jest": "26.6.3",
+    "ts-jest": "26.5.5",
+    "ts-loader": "9.0.0",
+    "typescript": "4.2.4",
     "webpack": "5.33.2",
-    "webpack-cli": "4.6.0"
+    "webpack-cli": "4.6.0",
+    "webpack-dev-server": "3.11.2"
   },
   "dependencies": {
     "@babel/runtime": "7.13.10",
+    "faker": "5.5.3",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   }

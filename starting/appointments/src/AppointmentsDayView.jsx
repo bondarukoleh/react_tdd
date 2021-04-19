@@ -1,22 +1,23 @@
 import React, {Fragment, useState} from 'react';
-import {Appointment} from './Appointment';
+import {Appointment} from './Appointment.tsx';
+import {appointmentTimeOfDay} from "./helpers/general";
 
 export const AppointmentsDayView = ({appointments}) => {
   const [appointmentToShow, setAppointmentToShow] = useState(0);
 
-  const appointmentTimeOfDay = startsAt => {
-    const [h, m] = new Date(startsAt).toTimeString().split(':');
-    return `${h}:${m}`;
-  };
   const showAppointment = (appointmentId) => setAppointmentToShow(appointmentId);
 
   const renderNoAppointment = () => <p>There are no appointments scheduled for today.</p>;
 
   const renderAppointment = () => {
-    const {customer, startsAt} = appointments[appointmentToShow];
+    const {customer, startsAt, stylist, service, notes} = appointments[appointmentToShow];
+
     return <Appointment
       customer={customer}
       startsAt={startsAt}
+      stylist={stylist}
+      service={service}
+      notes={notes}
     />;
   };
 

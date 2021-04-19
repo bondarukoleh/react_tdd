@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "commonjs",
+    "lib": ["es5", "dom", "es2015.collection"],
+    "declaration": true,
+    "allowJs": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "jsx": "react-jsx"
+  },
+  "exclude": ["webpack.config.js", "./dist", "server.js", "./test"],
+}
