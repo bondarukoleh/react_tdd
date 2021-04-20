@@ -1,6 +1,6 @@
 import React, {Fragment, useState} from 'react';
 import {Appointment} from './Appointment.tsx';
-import {appointmentTimeOfDay} from "./helpers/general";
+import {appointmentTimeOfDay} from "../helpers/general";
 
 export const AppointmentsDayView = ({appointments}) => {
   const [appointmentToShow, setAppointmentToShow] = useState(0);

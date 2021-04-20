@@ -1,8 +1,8 @@
-import React from 'react';
-import ReactTestUtils from 'react-dom/test-utils';
+import * as React from 'react';
+import * as ReactTestUtils from 'react-dom/test-utils';
 import {render} from 'react-dom';
-import {Appointment} from '../src/Appointment';
-import {AppointmentsDayView} from '../src/AppointmentsDayView';
+import {Appointment} from '../src/components/Appointment';
+import {AppointmentsDayView} from '../src/components/AppointmentsDayView';
 import {makeId} from "../src/helpers/general";
 
 describe('Appointment', function () {

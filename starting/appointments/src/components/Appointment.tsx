@@ -1,5 +1,5 @@
 import React from 'react';
-import {appointmentTimeOfDay} from "./helpers/general";
+import {appointmentTimeOfDay} from "../helpers/general";
 
 type TAppointment = {
   customer?: {firstName: string, lastName: string, phoneNumber: number},
