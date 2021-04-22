@@ -44,3 +44,5 @@ description as your commit message. No thinking is required.
 
 Try to not refactor on red. Skip the test that fails -> refactor or add functionality, and then unskip it. You can easy 
 control the refactoring going with green tests.
+
+**Consider React warnings** to be a **test failure**. Don't proceed without first fixing the warning.
