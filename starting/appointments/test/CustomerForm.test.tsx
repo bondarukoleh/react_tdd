@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as ReactTestUtils from 'react-dom/test-utils'
 import {createContainer} from './helpers/domManipulations';
 import {CustomerForm} from '../src/components/CustomerForm';
 
@@ -6,6 +7,8 @@ describe('CustomerForm', () => {
   let render, container;
   const formId = 'customer';
   const firstNameId = 'firstName';
+  const name = 'Bob';
+
   const form = (elemId: string) => container.querySelector(`form[id="${elemId}"]`);
   const firstNameField = () => form(formId).elements.firstName;
   const surNameField = () => form(formId).elements.surName;
@@ -29,8 +32,8 @@ describe('CustomerForm', () => {
   });
 
   it('includes the existing value for the first name', () => {
-    render(<CustomerForm firstName="Ashley" />);
-    expect(firstNameField().value).toEqual('Ashley');
+    render(<CustomerForm firstName={name} />);
+    expect(firstNameField().value).toEqual(name);
   });
 
   it('renders a label for the first name field', () => {
@@ -48,4 +51,33 @@ describe('CustomerForm', () => {
     render(<CustomerForm />);
     expect(labelFor(firstNameId).textContent).toEqual('First name');
   });
-});
+
+  it('saves existing first name when submitted', async () => {
+
+    render(
+      <CustomerForm
+        firstName={name}
+        submitted={({firstName}) => {expect(firstName).toEqual(name)}
+        }
+      />
+    );
+    ReactTestUtils.Simulate.submit(form(formId));
+  })
+
+  it('saves new first name when submitted', async () => {
+    const changedName = 'John'
+    render(
+      <CustomerForm
+        firstName={name}
+        submitted={({firstName}) => {
+          expect(firstName).toEqual(changedName)
+        }}
+      />
+    );
+
+    ReactTestUtils.Simulate.change(firstNameField(), {
+      target: {value: changedName} as unknown as EventTarget
+    });
+    ReactTestUtils.Simulate.submit(form(formId));
+  })
+})

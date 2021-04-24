@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import {appointmentTimeOfDay} from "../helpers/general";
 
 type TAppointment = {
