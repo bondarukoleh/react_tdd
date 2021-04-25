@@ -7,13 +7,17 @@ import {useState} from "react";
 // }
 
 export const CustomerForm = (props) => {
-  const {firstName, submitted} = props;
-  const [formFirstName, setFormFirstName] = useState(firstName)
-  const [formSurName, setFormSurName] = useState('')
+  const {firstName, surName, telephone, submitted} = props;
+  const [formFirstNameValue, setFormFirstName] = useState(firstName)
+  const [formSurNameValue, setFormSurName] = useState(surName)
+  const [formTelephoneValue, setFormTelephone] = useState(telephone)
 
   const submitHandler = () => {
-    console.log({firstName: formFirstName, surName: formSurName})
-    submitted({firstName: formFirstName, surName: formSurName})
+    submitted({
+      firstName: formFirstNameValue,
+      surName: formSurNameValue,
+      telephone: formTelephoneValue
+    })
   }
 
   return <form id="customer" onSubmit={submitHandler}>
@@ -21,17 +25,26 @@ export const CustomerForm = (props) => {
     <input
       type="text"
       name="firstName"
-      value={formFirstName}
+      value={formFirstNameValue}
       id="firstName"
       onChange={(e) => setFormFirstName(e.target.value)}
     />
+    <label htmlFor="surName">Sur name</label>
     <input
       type="text"
       name="surName"
-      value={formSurName}
+      value={formSurNameValue}
       id="surName"
       onChange={(e) => setFormSurName(e.target.value)}
     />
-    <button type={'submit'} value={'Submit'} name={'submitBtn'}/>
+    <label htmlFor="telephone">Telephone</label>
+    <input
+      type="text"
+      name="telephone"
+      value={formTelephoneValue}
+      id="telephone"
+      onChange={(e) => setFormTelephone(e.target.value)}
+    />
+    <input type="submit" value={'Add'} name={'submitBtn'}/>
   </form>
 };
