@@ -45,6 +45,6 @@ export const CustomerForm = (props) => {
       id="telephone"
       onChange={(e) => setFormTelephone(e.target.value)}
     />
-    <input type="submit" value={'Add'} name={'submitBtn'}/>
+    <input type="submit" value={'Add'} name={'customerSubmitBtn'}/>
   </form>
 };

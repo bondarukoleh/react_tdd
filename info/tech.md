@@ -47,3 +47,6 @@ import ReactDOM from 'react-dom';
 React components interoperate to **synthetic events**. React uses these to mask browser variability in
 the DOM event model. That means we can't raise standard events that we'd fire through JSDOM.
 Instead, we use the `ReactTestUtils.Simulate` object to raise events.
+
+React offers a mechanism for setting default prop values, defaultProps, which will be used when required props are
+not explicitly provided. `MyComponent.defaultProps = {required_prop: 'value'}`
