@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {useState} from "react";
 
-const TimeSlotTable = ({salonOpensAt, salonClosesAt, today}) => {
+const TimeSlotTable = ({salonOpensAt, salonClosesAt, today, availableTimeSlots}) => {
   const timeIncrements = (numTimes, startTime, increment) => {
     return Array(numTimes)
       .fill([startTime])
@@ -25,6 +25,7 @@ const TimeSlotTable = ({salonOpensAt, salonClosesAt, today}) => {
     const [day, , dayOfMonth] = new Date(timestamp).toDateString().split(' ');
     return `${day} ${dayOfMonth}`;
   };
+
   const toTimeValue = timestamp => new Date(timestamp).toTimeString().substring(0, 5); // 1619420400000 -> '09:00'
   const timeSlots = dailyTimeSlots(salonOpensAt, salonClosesAt);
   const dates = weeklyDateValues(today);
@@ -43,6 +44,16 @@ const TimeSlotTable = ({salonOpensAt, salonClosesAt, today}) => {
       {timeSlots.map(timeSlot => (
         <tr key={timeSlot}>
           <th>{toTimeValue(timeSlot)}</th>
+          {dates.map(date => {
+            return <td key={date}>
+              <RadioButtonIfAvailable
+                availableTimeSlots={availableTimeSlots}
+                date={date}
+                timeSlot={timeSlot}
+              />
+            </td>
+          }
+          )}
         </tr>
       ))}
       </tbody>
@@ -50,8 +61,33 @@ const TimeSlotTable = ({salonOpensAt, salonClosesAt, today}) => {
   );
 };
 
+const RadioButtonIfAvailable = ({availableTimeSlots, date, timeSlot}) => {
+  const mergeDateAndTime = (date, timeSlot) => {
+    const time = new Date(timeSlot);
+    return new Date(date).setHours(
+      time.getHours(),
+      time.getMinutes(),
+      time.getSeconds(),
+      time.getMilliseconds()
+    );
+  };
+  const startsAt = mergeDateAndTime(date, timeSlot);
+  if (availableTimeSlots.some(timeSlot => timeSlot.startsAt === startsAt)) {
+    return <input name="startsAt" type="radio" value={startsAt} />;
+  }
+  return null;
+};
+
 export const AppointmentForm = (props) => {
-  const {selectableServices, service, submitted, salonOpensAt, salonClosesAt, today} = props;
+  const {
+    selectableServices,
+    service,
+    submitted,
+    salonOpensAt,
+    salonClosesAt,
+    today,
+    availableTimeSlots
+  } = props;
   const [selectedServiceValue, setSelectedServiceValue] = useState(service);
 
   const handleServiceSelectChange = e => {
@@ -69,7 +105,12 @@ export const AppointmentForm = (props) => {
         return <option key={value}>{value}</option>
       })}
     </select>
-    <TimeSlotTable salonOpensAt={salonOpensAt} salonClosesAt={salonClosesAt} today={today}/>
+    <TimeSlotTable
+      salonOpensAt={salonOpensAt}
+      salonClosesAt={salonClosesAt}
+      today={today}
+      availableTimeSlots={availableTimeSlots}
+    />
     <input type='submit' value={'Select'} name={'serviceSubmitBtn'}/>
   </form>
 };
@@ -89,4 +130,5 @@ AppointmentForm.defaultProps = {
   salonOpensAt: 9,
   salonClosesAt: 19,
   today: new Date(),
+  availableTimeSlots: [],
 }

@@ -54,7 +54,7 @@ describe('AppointmentsDayView', function () {
 
   it('selects the first appointment by default', () => {
     render(<AppointmentsDayView appointments={appointments} />, container);
-    expect(container.querySelector('#appointment').textContent).toMatch(appointments[0].customer.firstName);
+    expect(container.querySelector('#appointmentView').textContent).toMatch(appointments[0].customer.firstName);
   });
 
   it('should renders appointments', () => {
@@ -86,6 +86,6 @@ describe('AppointmentsDayView', function () {
     render(<AppointmentsDayView appointments={appointments} />, container);
     const button = container.querySelector('#appointmentsDayView').querySelectorAll('button')[1];
     ReactTestUtils.Simulate.click(button);
-    expect(container.querySelector('#appointment').innerHTML).toMatch(appointments[1].customer.firstName);
+    expect(container.querySelector('#appointmentView').innerHTML).toMatch(appointments[1].customer.firstName);
   });
 });

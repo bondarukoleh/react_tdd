@@ -11,5 +11,5 @@
     "experimentalDecorators": true,
     "jsx": "react-jsx"
   },
-  "exclude": ["webpack.config.js", "./dist", "server.js", "./test"],
+  "exclude": ["webpack.config.js", "./dist", "./test"],
 }

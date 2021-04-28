@@ -35,12 +35,10 @@ export const AppointmentsDayView = ({appointments}) => {
     </Fragment>;
   };
 
-  return <Fragment>
-    <div id={'appointmentsDayView'}>
+  return <div id="appointmentsDayView">
       {appointments?.length
         ? renderAppointmentsList()
         : renderNoAppointment()}
     </div>
-  </Fragment>;
 };
 
