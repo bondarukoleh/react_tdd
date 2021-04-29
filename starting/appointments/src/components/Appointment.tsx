@@ -11,8 +11,7 @@ type TAppointment = {
 
 export const Appointment = (props: TAppointment) => {
   const {customer: {firstName, lastName, phoneNumber}, startsAt, notes, service, stylist} = props;
-  return <div id={'appointmentView'}>
-    <div id="appointmentView">
+  return <div id="appointmentView">
       <h3>
         Today&rsquo;s appointment at {appointmentTimeOfDay(startsAt)}
       </h3>
@@ -43,6 +42,5 @@ export const Appointment = (props: TAppointment) => {
         </tbody>
       </table>
     </div>
-  </div>;
 };
 

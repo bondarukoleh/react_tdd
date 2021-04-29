@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {createContainer} from './helpers/domManipulations';
-import {AppointmentForm} from '../src/components/AppointmentForm';
+import {AppointmentForm} from '../src/components/appointmentForm/AppointmentForm';
 import * as ReactTestUtils from "react-dom/test-utils";
 
 describe('AppointmentForm', () => {

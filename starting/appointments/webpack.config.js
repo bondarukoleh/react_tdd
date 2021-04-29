@@ -38,5 +38,6 @@ module.exports = {
   devServer: {
     contentBase: "./dist",
     port: 4500
-  }
+  },
+  devtool: 'eval-source-map'
 };
