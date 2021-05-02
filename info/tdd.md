@@ -46,3 +46,28 @@ Try to not refactor on red. Skip the test that fails -> refactor or add function
 control the refactoring going with green tests.
 
 **Consider React warnings** to be a **test failure**. Don't proceed without first fixing the warning.
+
+#### Test Doubles
+When we're writing tests, we isolate the unit under test. Sometimes that means we avoid exercising any of the
+``collaborating`` objects. Sometimes it's because those `collaborating` objects have side-effects that would
+complicate our tests. i.e., with React components we sometimes want to avoid rendering child components because
+they perform network requests when they are mounted. A **test double** is an **object** that acts in place of a
+`collaborating` object, i.e. onSubmit function - we can use a **test double** in place of the real function.
+
+**Test doubles** is at the edges of our system, when our code interacts with the outside world.
+Any kind of operating system resource is a candidate: filesystem access, network access, sockets, HTTP calls, and so on.
+Test doubles are categorized into a number of different types: `spies, stubs, mocks, dummies, and fakes`.
+
+**Avoiding fakes** \
+A fake is any test double that has any kind of logic or control structure within it, such as conditional statements or
+loops. Other types of test object, such as spies and stubs, are made up entirely of variable assignments and function
+calls. Fakes are useful when testing complex collaborations between two units. We'll often start by using spies and
+stubs and then refactor to a fake once the code starts to feel unwieldy. A single fake can cover a whole set of tests,
+which is simpler than maintaining a whole bunch of spies and stubs. \
+We avoid fakes for these reasons:
+ - Any logic requires tests, which means we must write tests for fakes, even though they are part of the test code.
+   Spies and stubs don't require tests.
+ - Often spies and stubs work in place of fakes. Only a small category of testing is simpler when we use fakes.
+ - Fakes increase test brittleness because they are shared between tests, unlike other test doubles.
+
+A **spy** is a test double that records the arguments it is called with so that those values can be inspected later on.
