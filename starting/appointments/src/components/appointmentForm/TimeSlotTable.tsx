@@ -1,7 +1,15 @@
 import * as React from "react";
 import {RadioButtonIfAvailable} from './RadioButtonIfAvailable'
 
-export const TimeSlotTable = ({salonOpensAt, salonClosesAt, today, availableTimeSlots}) => {
+export const TimeSlotTable = (props) => {
+  const {
+    salonOpensAt,
+    salonClosesAt,
+    today,
+    availableTimeSlots,
+    handleChange,
+    startsAt
+  } = props;
   const timeIncrements = (numTimes, startTime, increment) => {
     return Array(numTimes)
       .fill([startTime])
@@ -50,6 +58,8 @@ export const TimeSlotTable = ({salonOpensAt, salonClosesAt, today, availableTime
                   availableTimeSlots={availableTimeSlots}
                   date={date}
                   timeSlot={timeSlot}
+                  handleChange={handleChange}
+                  checkedTimeSlot={startsAt}
                 />
               </td>
             }

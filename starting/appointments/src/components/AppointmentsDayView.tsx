@@ -31,7 +31,7 @@ export const AppointmentsDayView = ({appointments}) => {
             </button>
           </li>))}
       </ol>
-      {renderAppointment(appointmentToShow)}
+      {renderAppointment()}
     </Fragment>;
   };
 
