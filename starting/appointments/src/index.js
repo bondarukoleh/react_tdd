@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'whatwg-fetch';
 import { AppointmentForm } from './components/AppointmentForm';
 import {
   sampleAvailableTimeSlots,
