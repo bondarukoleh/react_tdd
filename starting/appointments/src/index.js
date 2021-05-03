@@ -1,11 +1,15 @@
-import React from "react";
+import React from 'react';
 import ReactDOM from 'react-dom';
-import {AppointmentsDayView} from './components/AppointmentsDayView';
-import {sampleAppointments} from './data/sampleData';
+import { AppointmentForm } from './components/AppointmentForm';
+import {
+  sampleAvailableTimeSlots,
+  sampleStylists
+} from './data/sampleData';
 import './styles.css'
-import {AppointmentForm} from "./components/appointmentForm/AppointmentForm";
 
-ReactDOM.render(<AppointmentForm />,
-  document.getElementById('root'));
-
-
+ReactDOM.render(
+  <AppointmentForm
+    availableTimeSlots={sampleAvailableTimeSlots}
+  />,
+  document.getElementById('root')
+);
