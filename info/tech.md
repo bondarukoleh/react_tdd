@@ -50,3 +50,41 @@ Instead, we use the `ReactTestUtils.Simulate` object to raise events.
 
 React offers a mechanism for setting default prop values, defaultProps, which will be used when required props are
 not explicitly provided. `MyComponent.defaultProps = {required_prop: 'value'}`
+
+Using a Jest matcher to simplify expectations \
+expect(submitSpy).toHaveBeenCalled();
+This is more descriptive than using a toBeDefined() argument on the matcher. It also encapsulates the notion
+that if receivedArguments hasn't been set, then it hasn't been called.
+```js
+expect.extend({
+  toHaveBeenCalled(received) {
+    if (received.receivedArguments() === undefined) {
+      return {
+        pass: false,
+        message: () => 'Spy was not called.'
+      };
+    }
+    return { pass: true, message: () => 'Spy was called.' };
+  }
+});
+
+expect(submitSpy).toHaveBeenCalled();
+```
+All Jest matchers must return an object with a pass property, which is either true or false, and a
+message property, which is a function that returns a string.
+
+To prepare a component for assertions, wrap the code rendering it and performing updates inside an `act()` call.
+This makes your test run closer to how React works in the browser. There are two forms of act: a synchronous form and
+an asynchronous form. So what does act do? It defers state updates until the entirety of the function passed to act
+has completed. That helps to avoid timing issues. Second, it waits for any useEffect hook functions to complete.
+The asynchronous version will wait for the runtime's task queue to complete execution. This means that anything that
+occurs as a separate asynchronous task, such as a fetch request invoked from a useEffect hook, is guaranteed to have
+completed by the time your expectations happen.
+```js
+import ReactTestUtils, {act} from 'react-dom/test-utils';
+await act(async () => { performSomeReactAction() });
+act(() => {ReactDOM.render(<Counter />, container)});
+act(() => {button.dispatchEvent(new MouseEvent('click', {bubbles: true}))});
+```
+
+Jest mock function - pretty powerful thing that helps you to mock your functions;

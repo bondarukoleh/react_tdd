@@ -1,7 +1,8 @@
 import React from 'react';
-import ReactTestUtils from 'react-dom/test-utils';
+import ReactTestUtils, {act} from 'react-dom/test-utils';
 import { createContainer } from './helpers/domManipulations';
 import { CustomerForm } from '../src/components/CustomerForm';
+import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf} from '../src/helpers/spyHelpers'
 
 describe('CustomerForm', () => {
   let render, container;
@@ -10,8 +11,8 @@ describe('CustomerForm', () => {
 
   beforeEach(() => {
     ({ render, container } = createContainer());
-    fetchSpy = spy();
-    window.fetch = fetchSpy.fn;
+    fetchSpy = jest.fn();
+    window.fetch = fetchSpy;
   });
 
   afterEach(() => {
@@ -20,27 +21,7 @@ describe('CustomerForm', () => {
 
   const form = id => container.querySelector(`form[id="${id}"]`);
   const field = name => form('customer').elements[name];
-  const labelFor = formElement =>
-    container.querySelector(`label[for="${formElement}"]`);
-  const spy = () => {
-    let receivedArguments;
-    return {
-      fn: (...args) => (receivedArguments = args),
-      receivedArguments: () => receivedArguments,
-      receivedArgument: n => receivedArguments[n]
-    };
-  };
-  expect.extend({
-    toHaveBeenCalled(received) {
-      if (received.receivedArguments() === undefined) {
-        return {
-          pass: false,
-          message: () => 'Spy was not called.'
-        };
-      }
-      return { pass: true, message: () => 'Spy was called.' };
-    }
-  });
+  const labelFor = formElement => container.querySelector(`label[for="${formElement}"]`);
 
   it('renders a form', () => {
     render(<CustomerForm />);
@@ -88,29 +69,30 @@ describe('CustomerForm', () => {
 
   const itSubmitsExistingValue = (fieldName, value) =>
     it('saves existing value when submitted', async () => {
+      fetchSpy.mockImplementationOnce(() => fetchResponseOk({ [fieldName]: value }))
       render(
         <CustomerForm
           {...{ [fieldName]: value }}
         />
       );
-      await ReactTestUtils.Simulate.submit(form('customer'));
-      const fetchOpts = fetchSpy.receivedArgument(1);
-      expect(JSON.parse(fetchOpts.body)[fieldName]).toEqual(value);
+      await act(async () => ReactTestUtils.Simulate.submit(form('customer')));
+      expect(fetchRequestBodyOf(fetchSpy)).toMatchObject({[fieldName]: value})
     });
 
   const itSubmitsNewValue = (fieldName, value) => {
     it('saves new value when submitted', async () => {
+      fetchSpy.mockImplementationOnce(() => fetchResponseOk({ [fieldName]: value }))
+
       render(
         <CustomerForm
           {...{ [fieldName]: 'existingValue' }}
         />
       );
-      await ReactTestUtils.Simulate.change(field(fieldName), {
-        target: { value, name: fieldName }
+      await act(async () => {
+        ReactTestUtils.Simulate.change(field(fieldName), {target: { value, name: fieldName }})
       });
-      await ReactTestUtils.Simulate.submit(form('customer'));
-      const fetchOpts = fetchSpy.receivedArgument(1);
-      expect(JSON.parse(fetchOpts.body)[fieldName]).toEqual(value);
+      await act(async () => ReactTestUtils.Simulate.submit(form('customer')));
+      expect(fetchRequestBodyOf(fetchSpy)).toMatchObject({[fieldName]: value})
     });
   }
 
@@ -141,19 +123,66 @@ describe('CustomerForm', () => {
     itSubmitsNewValue('phoneNumber', '67890');
   });
 
-  // it('calls fetch with the right properties when submitting data', async () => {
-  //   const fetchSpy = spy();
-  //   render(
-  //     <CustomerForm onSubmit={() => {}} />
-  //   );
-  //   ReactTestUtils.Simulate.submit(form('customer'));
-  //   expect(fetchSpy).toHaveBeenCalled();
-  //   expect(fetchSpy.receivedArgument(0)).toEqual('/customers');
-  //   const fetchOpts = fetchSpy.receivedArgument(1);
-  //   expect(fetchOpts.method).toEqual('POST');
-  //   expect(fetchOpts.credentials).toEqual('same-origin');
-  //   expect(fetchOpts.headers).toEqual({
-  //     'Content-Type': 'application/json'
-  //   });
-  // });
+  it('calls fetch with the right properties when submitting data', async () => {
+
+    fetchSpy.mockImplementationOnce(() => fetchResponseOk({}))
+    render(<CustomerForm />);
+
+    await act(async () => {
+      ReactTestUtils.Simulate.submit(form('customer'));
+    });
+
+    expect(fetchSpy).toHaveBeenCalledWith('/customers',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json'}
+      })
+    );
+  });
+
+  it('prevents the default action when submitting the form', async () => {
+    fetchSpy.mockImplementation(() => fetchResponseOk({}))
+    render(<CustomerForm />);
+    await act(async () => {
+      ReactTestUtils.Simulate.submit(form('customer'), {
+        preventDefault: fetchSpy
+      });
+    });
+    expect(fetchSpy).toHaveBeenCalled();
+  });
+
+  it('notifies onSave when form is submitted', async () => {
+    const customer = { firstName: 'Oleh' };
+    fetchSpy.mockImplementationOnce(() => fetchResponseOk(customer))
+    const saveSpy = jest.fn();
+    render(<CustomerForm onSave={saveSpy} {...customer} />);
+    await act(async () => {
+      ReactTestUtils.Simulate.submit(form('customer'));
+    });
+    expect(saveSpy).toHaveBeenCalled();
+    expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining(customer));
+  });
+
+  it('does not notify onSave if the POST request returns an error', async () => {
+      const saveSpy = jest.fn();
+    fetchSpy.mockImplementationOnce(() => fetchResponseError())
+
+      render(<CustomerForm onSave={saveSpy} />);
+      await act(async () => {
+        ReactTestUtils.Simulate.submit(form('customer'));
+      });
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+  it('renders error message when fetch call fails', async () => {
+    fetchSpy.mockImplementationOnce(() => fetchResponseError())
+    render(<CustomerForm />);
+    await act(async () => {
+      ReactTestUtils.Simulate.submit(form('customer'));
+    });
+    const errorElement = container.querySelector('.error');
+    expect(errorElement).not.toBeNull();
+    expect(errorElement.textContent).toMatch('error occurred');
+  });
 });

@@ -72,24 +72,6 @@ We avoid fakes for these reasons:
 
 A **spy** is a test double that records the arguments it is called with so that those values can be inspected later on.
 
-Using a Jest matcher to simplify expectations \
-expect(submitSpy).toHaveBeenCalled();
-This is more descriptive than using a toBeDefined() argument on the matcher. It also encapsulates the notion
-that if receivedArguments hasn't been set, then it hasn't been called.
-```js
-expect.extend({
-  toHaveBeenCalled(received) {
-    if (received.receivedArguments() === undefined) {
-      return {
-        pass: false,
-        message: () => 'Spy was not called.'
-      };
-    }
-    return { pass: true, message: () => 'Spy was called.' };
-  }
-});
+A **stub** is a test double that always returns the same value when it is invoked. You decide what this value is when
+you construct the stub.
 
-expect(submitSpy).toHaveBeenCalled();
-```
-All Jest matchers must return an object with a pass property, which is either true or false, and a
-message property, which is a function that returns a string.
