@@ -3,21 +3,20 @@ import ReactTestUtils, {act} from 'react-dom/test-utils';
 import { createContainer } from './helpers/domManipulations';
 import { CustomerForm } from '../src/components/CustomerForm';
 import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf} from '../src/helpers/spyHelpers'
+import 'whatwg-fetch';
 
 describe('CustomerForm', () => {
   let render, container;
-  const originalFetch = window.fetch;
   let fetchSpy;
 
   beforeEach(() => {
     ({ render, container } = createContainer());
+    jest.spyOn(window, 'fetch')
     fetchSpy = jest.fn();
     window.fetch = fetchSpy;
   });
 
-  afterEach(() => {
-    window.fetch = originalFetch;
-  });
+  afterEach(() => window.fetch.mockRestore());
 
   const form = id => container.querySelector(`form[id="${id}"]`);
   const field = name => form('customer').elements[name];
