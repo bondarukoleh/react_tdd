@@ -4,60 +4,46 @@ import { createContainer } from './helpers/domManipulations';
 import { AppointmentForm } from '../src/components/AppointmentForm';
 
 describe('AppointmentForm', () => {
-  let render, container;
+  let render, getFormField, labelFor, startsAtField, getForm, getElement;
+  const formId = 'appointment';
 
   beforeEach(() => {
-    ({ render, container } = createContainer());
+    ({render, getFormField, labelFor, startsAtField, render, getForm, getElement} = createContainer());
   });
-
-  const form = id => container.querySelector(`form[id="${id}"]`);
-  const field = name => form('appointment').elements[name];
-  const labelFor = formElement =>
-    container.querySelector(`label[for="${formElement}"]`);
-  const startsAtField = index =>
-    container.querySelectorAll(`input[name="startsAt"]`)[index];
 
   const findOption = (dropdownNode, textContent) => {
     const options = Array.from(dropdownNode.childNodes);
-    return options.find(
-      option => option.textContent === textContent
-    );
+    return options.find(option => option.textContent === textContent);
   };
 
   it('renders a form', () => {
     render(<AppointmentForm />);
-    expect(form('appointment')).not.toBeNull();
+    expect(getForm(formId)).not.toBeNull();
   });
 
   it('has a submit button', () => {
     render(<AppointmentForm />);
-    const submitButton = container.querySelector(
-      'input[type="submit"]'
-    );
+    const submitButton = getElement('input[type="submit"]');
     expect(submitButton).not.toBeNull();
   });
 
   const itRendersAsASelectBox = fieldName => {
     it('renders as a select box', () => {
       render(<AppointmentForm />);
-      expect(field(fieldName)).not.toBeNull();
-      expect(field(fieldName).tagName).toEqual('SELECT');
+      expect(getFormField({formId, name: fieldName})).not.toBeNull();
+      expect(getFormField({formId, name: fieldName}).tagName).toEqual('SELECT');
     });
   };
 
   const itInitiallyHasABlankValueChosen = fieldName =>
     it('initially has a blank value chosen', () => {
       render(<AppointmentForm />);
-      const firstNode = field(fieldName).childNodes[0];
+      const firstNode = getFormField({formId, name: fieldName}).childNodes[0];
       expect(firstNode.value).toEqual('');
       expect(firstNode.selected).toBeTruthy();
     });
 
-  const itPreselectsExistingValue = (
-    fieldName,
-    props,
-    existingValue
-  ) => {
+  const itPreselectsExistingValue = (fieldName, props, existingValue) => {
     it('pre-selects the existing value', () => {
       render(
         <AppointmentForm
@@ -65,7 +51,7 @@ describe('AppointmentForm', () => {
           {...{ [fieldName]: existingValue }}
         />
       );
-      const option = findOption(field(fieldName), existingValue);
+      const option = findOption(getFormField({formId, name: fieldName}), existingValue);
       expect(option.selected).toBeTruthy();
     });
   };
@@ -81,7 +67,7 @@ describe('AppointmentForm', () => {
   const itAssignsAnIdThatMatchesTheLabelId = fieldName => {
     it('assigns an id that matches the label id', () => {
       render(<AppointmentForm />);
-      expect(field(fieldName).id).toEqual(fieldName);
+      expect(getFormField({formId, name: fieldName}).id).toEqual(fieldName);
     });
   };
 
@@ -97,7 +83,7 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      await ReactTestUtils.Simulate.submit(form('appointment'));
+      await ReactTestUtils.Simulate.submit(getForm(formId));
     });
   };
 
@@ -113,10 +99,10 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      await ReactTestUtils.Simulate.change(field(fieldName), {
+      await ReactTestUtils.Simulate.change(getFormField({formId, name: 'stylist'}), {
         target: { value: 'newValue', name: fieldName }
       });
-      await ReactTestUtils.Simulate.submit(form('appointment'));
+      await ReactTestUtils.Simulate.submit(getForm(formId));
     });
   };
 
@@ -144,13 +130,9 @@ describe('AppointmentForm', () => {
         <AppointmentForm selectableServices={selectableServices} />
       );
 
-      const optionNodes = Array.from(field('service').childNodes);
-      const renderedServices = optionNodes.map(
-        node => node.textContent
-      );
-      expect(renderedServices).toEqual(
-        expect.arrayContaining(selectableServices)
-      );
+      const optionNodes = Array.from(getFormField({formId, name: 'service'}).childNodes);
+      const renderedServices = optionNodes.map(node => node.textContent);
+      expect(renderedServices).toEqual(expect.arrayContaining(selectableServices));
     });
   });
 
@@ -182,11 +164,11 @@ describe('AppointmentForm', () => {
         />
       );
 
-      ReactTestUtils.Simulate.change(field('service'), {
+      ReactTestUtils.Simulate.change(getFormField({formId, name: 'service'}), {
         target: { value: '1', name: 'service' }
       });
 
-      const optionNodes = Array.from(field('stylist').childNodes);
+      const optionNodes = Array.from(getFormField({formId, name: 'stylist'}).childNodes);
       const renderedServices = optionNodes.map(
         node => node.textContent
       );
@@ -196,8 +178,7 @@ describe('AppointmentForm', () => {
     });
   });
 
-  const timeSlotTable = () =>
-    container.querySelector('table#time-slots');
+  const timeSlotTable = () => getElement('table#time-slots');
 
   describe('time slot table', () => {
     const today = new Date();
@@ -306,7 +287,7 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      ReactTestUtils.Simulate.submit(form('appointment'));
+      ReactTestUtils.Simulate.submit(getForm(formId));
     });
 
     it('saves new value when submitted', () => {
@@ -329,7 +310,7 @@ describe('AppointmentForm', () => {
           name: 'startsAt'
         }
       });
-      ReactTestUtils.Simulate.submit(form('appointment'));
+      ReactTestUtils.Simulate.submit(getForm(formId));
     });
 
     it('filters appointments by selected stylist', () => {
@@ -351,7 +332,7 @@ describe('AppointmentForm', () => {
         />
       );
 
-      ReactTestUtils.Simulate.change(field('stylist'), {
+      ReactTestUtils.Simulate.change(getFormField({formId, name: 'stylist'}), {
         target: { value: 'B', name: 'stylist' }
       });
 
