@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import * as ReactTestUtils from 'react-dom/test-utils';
 import {
   Appointment,
   AppointmentsDayView
@@ -111,10 +110,10 @@ describe('AppointmentsDayView', () => {
       customer: {firstName: 'Jordan'}
     }
   ];
-  let render, getElement, container, getElements;
+  let render, getElement, container, getElements, click;
 
   beforeEach(() => {
-    ({render, getElement, container, getElements} = createContainer());
+    ({render, getElement, container, getElements, click} = createContainer());
   });
 
   it('renders a div with the right id', () => {
@@ -156,14 +155,14 @@ describe('AppointmentsDayView', () => {
   it('renders another appointment when selected', () => {
     render(<AppointmentsDayView appointments={appointments}/>);
     const button = getElements('button')[1];
-    ReactTestUtils.Simulate.click(button);
+    click(button);
     expect(container.textContent).toMatch('Jordan');
   });
 
   it('adds toggled class to button when selected', () => {
     render(<AppointmentsDayView appointments={appointments}/>);
     const button = getElements('button')[1];
-    ReactTestUtils.Simulate.click(button);
+    click(button);
     expect(button.className).toMatch('toggled');
   });
 

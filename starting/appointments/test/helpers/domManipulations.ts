@@ -1,5 +1,9 @@
 import * as ReactDOM from 'react-dom';
+import * as ReactTestUtils from 'react-dom/test-utils';
 import {ReactElement} from "react";
+import {EventSimulator} from "react-dom/test-utils";
+
+const {act} = ReactTestUtils;
 
 type CreateContainerT = {
   container: HTMLDivElement,
@@ -9,7 +13,16 @@ type CreateContainerT = {
   startsAtField: (index: number) => Element,
   getForm: (id: string) => HTMLFormElement
   getElement: (selector: string) => Element
-  getElements: (selector: string) => NodeList
+  getElements: (selector: string) => NodeList,
+  click: (element: HTMLElement, eventData: {}) => void,
+  change: (element: HTMLElement, eventData: {}) => void,
+  submit: (element: HTMLElement, eventData: {}) => Promise<void>,
+}
+
+enum EventsT {
+  CLICK = 'click',
+  CHANGE = 'change',
+  SUBMIT = 'submit',
 }
 
 export const createContainer = (): CreateContainerT => {
@@ -21,6 +34,19 @@ export const createContainer = (): CreateContainerT => {
   const render = (component: ReactElement) => ReactDOM.render(component, container) as Element
   const getElement = (selector: string) => container.querySelector(selector) as Element;
   const getElements = (selector: string) => container.querySelectorAll(selector) as NodeList;
+  const simulateEvent = (eventName: EventsT) => {
+    return (element: HTMLElement, eventData: {}): void => {
+      return ReactTestUtils.Simulate[eventName](element, eventData)
+    }
+  };
+
+  const asyncSimulateEvent = (eventName: EventsT)  => {
+    return async (element: HTMLElement, eventData: {}) => {
+      return act(async () =>
+        ReactTestUtils.Simulate[eventName](element, eventData)
+      )
+    }
+  };
 
   return {
     container,
@@ -31,5 +57,12 @@ export const createContainer = (): CreateContainerT => {
     getForm,
     getElement,
     getElements,
+    click: simulateEvent(EventsT.CLICK),
+    change: simulateEvent(EventsT.CHANGE),
+    submit: asyncSimulateEvent(EventsT.SUBMIT),
   }
 }
+
+export const withEvent = (name, value) => ({
+  target: { name, value }
+});

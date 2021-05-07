@@ -1,14 +1,23 @@
 import React from 'react';
 import ReactTestUtils from 'react-dom/test-utils';
-import { createContainer } from './helpers/domManipulations';
+import { createContainer, withEvent } from './helpers/domManipulations';
 import { AppointmentForm } from '../src/components/AppointmentForm';
 
 describe('AppointmentForm', () => {
-  let render, getFormField, labelFor, startsAtField, getForm, getElement;
+  let render, getFormField, labelFor, startsAtField, getForm, getElement, change, submit;
   const formId = 'appointment';
 
   beforeEach(() => {
-    ({render, getFormField, labelFor, startsAtField, render, getForm, getElement} = createContainer());
+    ({render,
+      getFormField,
+      labelFor,
+      startsAtField,
+      render,
+      getForm,
+      getElement,
+      change,
+      submit
+    } = createContainer());
   });
 
   const findOption = (dropdownNode, textContent) => {
@@ -83,13 +92,12 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      await ReactTestUtils.Simulate.submit(getForm(formId));
+      await submit(getForm(formId));
     });
   };
 
   const itSubmitsNewValue = (fieldName, props) => {
     it('saves new value when submitted', async () => {
-      expect.hasAssertions();
       render(
         <AppointmentForm
           {...props}
@@ -99,10 +107,9 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      await ReactTestUtils.Simulate.change(getFormField({formId, name: 'stylist'}), {
-        target: { value: 'newValue', name: fieldName }
-      });
-      await ReactTestUtils.Simulate.submit(getForm(formId));
+      await change(getFormField({formId, name: 'stylist'}), withEvent(fieldName, 'newValue'));
+      await submit(getForm(formId));
+      expect.hasAssertions();
     });
   };
 
@@ -164,9 +171,7 @@ describe('AppointmentForm', () => {
         />
       );
 
-      ReactTestUtils.Simulate.change(getFormField({formId, name: 'service'}), {
-        target: { value: '1', name: 'service' }
-      });
+      change(getFormField({formId, name: 'service'}), withEvent('service', '1'));
 
       const optionNodes = Array.from(getFormField({formId, name: 'stylist'}).childNodes);
       const renderedServices = optionNodes.map(
@@ -287,7 +292,7 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      ReactTestUtils.Simulate.submit(getForm(formId));
+      submit(getForm(formId));
     });
 
     it('saves new value when submitted', () => {
@@ -304,13 +309,8 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      ReactTestUtils.Simulate.change(startsAtField(1), {
-        target: {
-          value: availableTimeSlots[1].startsAt.toString(),
-          name: 'startsAt'
-        }
-      });
-      ReactTestUtils.Simulate.submit(getForm(formId));
+      change(startsAtField(1), withEvent('startsAt', availableTimeSlots[1].startsAt.toString()));
+      submit(getForm(formId));
     });
 
     it('filters appointments by selected stylist', () => {
@@ -332,9 +332,7 @@ describe('AppointmentForm', () => {
         />
       );
 
-      ReactTestUtils.Simulate.change(getFormField({formId, name: 'stylist'}), {
-        target: { value: 'B', name: 'stylist' }
-      });
+      change(getFormField({formId, name: 'stylist'}), withEvent('stylist', 'B'));
 
       const cells = timeSlotTable().querySelectorAll('td');
       expect(
