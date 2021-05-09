@@ -1,24 +1,16 @@
 import * as React from "react";
 import { useState } from 'react';
 
-export const CustomerForm = ({
-                               firstName,
-                               lastName,
-                               phoneNumber,
-                               onSave
-                             }) => {
-  const [customer, setCustomer] = useState({
-    firstName,
-    lastName,
-    phoneNumber
-  });
+export const CustomerForm = ({firstName, lastName, phoneNumber, onSave}) => {
+  const [customer, setCustomer] = useState({firstName, lastName, phoneNumber});
   const [error, setError] = useState(false);
 
-  const handleChange = ({ target }) =>
-    setCustomer(customer => ({
+  const handleChange = ({target}) => {
+    return setCustomer(customer => ({
       ...customer,
       [target.name]: target.value
     }));
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +21,7 @@ export const CustomerForm = ({
       body: JSON.stringify(customer)
     });
     if (result.ok) {
+      error && setError(false);
       onSave(await result.json());
     } else {
       setError(true)

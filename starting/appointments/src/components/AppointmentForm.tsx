@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useCallback } from 'react';
+import {useState, useCallback} from 'react';
 
 const timeIncrements = (numTimes, startTime, increment) =>
   Array(numTimes)
@@ -78,7 +78,7 @@ const TimeSlotTable = ({
     <table id="time-slots">
       <thead>
       <tr>
-        <th />
+        <th/>
         {dates.map(d => (
           <th key={d}>{toShortDate(d)}</th>
         ))}
@@ -124,15 +124,16 @@ export const AppointmentForm = ({
     startsAt,
     stylist
   });
+  const [error, setError] = useState(false);
 
-  const handleSelectBoxChange = ({ target: { value, name } }) =>
+  const handleSelectBoxChange = ({target: {value, name}}) =>
     setAppointment(appointment => ({
       ...appointment,
       [name]: value
     }));
 
   const handleStartsAtChange = useCallback(
-    ({ target: { value } }) =>
+    ({target: {value}}) =>
       setAppointment(appointment => ({
         ...appointment,
         startsAt: parseInt(value)
@@ -140,25 +141,42 @@ export const AppointmentForm = ({
     []
   );
 
-  const stylistsForService = appointment.service
-    ? serviceStylists[appointment.service]
-    : selectableStylists;
+  const stylistsForService = appointment.service ? serviceStylists[appointment.service] : selectableStylists;
 
   const timeSlotsForStylist = appointment.stylist
-    ? availableTimeSlots.filter(slot =>
-      slot.stylists.includes(appointment.stylist)
-    )
+    ? availableTimeSlots.filter(slot => slot.stylists.includes(appointment.stylist))
     : availableTimeSlots;
 
+  const handleSubmit = async (e) => {
+    onSubmit(appointment);
+    e.preventDefault();
+    const result = await window.fetch('/appointments', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(appointment)
+    });
+    if (result.ok) {
+      error && setError(false);
+    } else {
+      setError(true);
+    }
+  }
+
+  const Error = () => (
+    <div className="error">An error occurred during save.</div>
+  );
+
   return (
-    <form id="appointment" onSubmit={() => onSubmit(appointment)}>
+    <form id="appointment" onSubmit={handleSubmit}>
+      { error ? <Error /> : null }
       <label htmlFor="service">Salon service</label>
       <select
         name="service"
         id="service"
         value={service}
         onChange={handleSelectBoxChange}>
-        <option />
+        <option/>
         {selectableServices.map(s => (
           <option key={s}>{s}</option>
         ))}
@@ -170,10 +188,10 @@ export const AppointmentForm = ({
         id="stylist"
         value={stylist}
         onChange={handleSelectBoxChange}>
-        <option />
-        {stylistsForService.map(s => (
-          <option key={s}>{s}</option>
-        ))}
+        <option/>
+        {stylistsForService.map(s => {
+          return <option key={s}>{s}</option>
+        })}
       </select>
 
       <TimeSlotTable
@@ -185,7 +203,7 @@ export const AppointmentForm = ({
         handleChange={handleStartsAtChange}
       />
 
-      <input type="submit" value="Add" />
+      <input type="submit" value="Add"/>
     </form>
   );
 };

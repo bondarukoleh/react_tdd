@@ -1,7 +1,7 @@
 import React from 'react';
 import {createContainer, withEvent} from './helpers/domManipulations';
 import {CustomerForm} from '../src/components/CustomerForm';
-import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf} from '../src/helpers/spyHelpers';
+import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf} from './helpers/spyHelpers';
 import 'whatwg-fetch';
 
 describe('CustomerForm', () => {
@@ -82,7 +82,6 @@ describe('CustomerForm', () => {
   const itSubmitsNewValue = (fieldName, value) => {
     it('saves new value when submitted', async () => {
       fetchSpy.mockImplementationOnce(() => fetchResponseOk({[fieldName]: value}));
-
       render(
         <CustomerForm
           {...{[fieldName]: 'existingValue'}}
@@ -171,5 +170,19 @@ describe('CustomerForm', () => {
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
     expect(errorElement.textContent).toMatch('error occurred');
+  });
+
+  it('state is cleared when the form is submitted again', async () => {
+    const customer = {firstName: 'Oleh'};
+
+    fetchSpy.mockImplementationOnce(() => fetchResponseError());
+    render(<CustomerForm/>);
+    await submit(getForm(formId));
+    const errorElement = getElement('.error');
+    expect(errorElement).not.toBeNull();
+
+    fetchSpy.mockImplementationOnce(() => fetchResponseOk(customer));
+    await submit(getForm(formId));
+    expect(getElement('.error')).toBeNull();
   });
 });
