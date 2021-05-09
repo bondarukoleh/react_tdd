@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --verbose",
     "test-w": "jest --watchAll",
-    "test-special": "jest -t \"calls fetch with the right properties when submitting data\" --verbose",
+    "test-special": "jest -t \"AppointmentFormLoader\" --verbose",
     "build": "webpack",
     "wds": "webpack serve"
   },

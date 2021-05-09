@@ -115,7 +115,7 @@ describe('AppointmentForm', () => {
           }
         />
       );
-      await change(getFormField({formId, name: fieldName}), withEvent(fieldName, newValue));
+      change(getFormField({formId, name: fieldName}), withEvent(fieldName, newValue));
       await submit(getForm(formId));
       expect.hasAssertions();
     });

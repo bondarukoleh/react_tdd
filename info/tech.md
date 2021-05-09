@@ -79,7 +79,10 @@ an asynchronous form. So what does act do? It defers state updates until the ent
 has completed. That helps to avoid timing issues. Second, it waits for any useEffect hook functions to complete.
 The asynchronous version will wait for the runtime's task queue to complete execution. This means that anything that
 occurs as a separate asynchronous task, such as a fetch request invoked from a useEffect hook, is guaranteed to have
-completed by the time your expectations happen.
+completed by the time your expectations happen. \
+The synchronous form of act does two things: first, it calls all useEffect hooks after it has rendered the provided
+component. Second, it defers any state setters until after all effects have executed. We are using the first behavior
+here.
 ```js
 import ReactTestUtils, {act} from 'react-dom/test-utils';
 await act(async () => { performSomeReactAction() });
@@ -88,3 +91,12 @@ act(() => {button.dispatchEvent(new MouseEvent('click', {bubbles: true}))});
 ```
 
 Jest mock function - pretty powerful thing that helps you to mock your functions;
+
+**container component** - This is a component whose purpose is simply to pull data together and pass
+it on to another component. \
+Why use a container component? \
+We could add a useEffect hook straight into AppointmentForm. But if we did that, we'd then have two
+methods for setting availableTimeSlots: the original prop and the new fetch call. Aligning the two
+adds complication. Do we set the initial value to the prop and then overwrite it with the data 
+from fetch? Or perhaps we should get rid of the prop entirely, in which case we'll need to
+rewrite our tests to use a stubbed fetch response to set availableTimeSlots.

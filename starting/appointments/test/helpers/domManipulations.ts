@@ -7,7 +7,7 @@ const {act} = ReactTestUtils;
 
 type CreateContainerT = {
   container: HTMLDivElement,
-  render: (component: ReactElement) => Element
+  render: (component: ReactElement) => void
   getFormField: ({formId, name}: {formId: string; name: string}) => HTMLFormControlsCollection,
   labelFor: (formLabel: string) => Element,
   startsAtField: (index: number) => Element,
@@ -17,6 +17,7 @@ type CreateContainerT = {
   click: (element: HTMLElement, eventData: {}) => void,
   change: (element: HTMLElement, eventData: {}) => void,
   submit: (element: HTMLElement, eventData: {}) => Promise<void>,
+  asyncRender: (component: ReactElement) => Promise<void>
 }
 
 enum EventsT {
@@ -31,12 +32,21 @@ export const createContainer = (): CreateContainerT => {
   const getFormField = ({formId, name}: {formId: string, name: string}) => getForm(formId).elements[name];
   const labelFor = (formLabel: string): Element => container.querySelector(`label[for="${formLabel}"]`);
   const startsAtField = (index: number) => container.querySelectorAll(`input[name="startsAt"]`)[index] as Element;
-  const render = (component: ReactElement) => ReactDOM.render(component, container) as Element
+  const render = component => {
+    act(() => {
+      ReactDOM.render(component, container);
+    })
+  }
+  const asyncRender = async component => {
+    return act(async () => {
+      ReactDOM.render(component, container)
+    });
+  };
   const getElement = (selector: string) => container.querySelector(selector) as Element;
   const getElements = (selector: string) => container.querySelectorAll(selector) as NodeList;
   const simulateEvent = (eventName: EventsT) => {
     return (element: HTMLElement, eventData: {}): void => {
-      return ReactTestUtils.Simulate[eventName](element, eventData)
+      act(() => ReactTestUtils.Simulate[eventName](element, eventData))
     }
   };
 
@@ -60,6 +70,7 @@ export const createContainer = (): CreateContainerT => {
     click: simulateEvent(EventsT.CLICK),
     change: simulateEvent(EventsT.CHANGE),
     submit: asyncSimulateEvent(EventsT.SUBMIT),
+    asyncRender
   }
 }
 
