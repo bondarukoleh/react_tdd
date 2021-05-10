@@ -117,7 +117,8 @@ export const AppointmentForm = ({
                                   salonClosesAt,
                                   today,
                                   availableTimeSlots,
-                                  startsAt
+                                  startsAt,
+                                  customer
                                 }) => {
   const [appointment, setAppointment] = useState({
     service,
@@ -148,15 +149,18 @@ export const AppointmentForm = ({
     : availableTimeSlots;
 
   const handleSubmit = async (e) => {
-    onSubmit(appointment);
     e.preventDefault();
     const result = await window.fetch('/appointments', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(appointment)
+      body: JSON.stringify({
+        ...appointment,
+        customer: customer.id
+      })
     });
     if (result.ok) {
+      onSubmit(appointment);
       error && setError(false);
     } else {
       setError(true);

@@ -41,4 +41,13 @@ describe('AppointmentFormLoader', () => {
     await asyncRender(<AppointmentFormLoader />);
     expect(AppointmentFormSpy.mock.calls.pop()[0].availableTimeSlots).toEqual(expect.arrayContaining(availableTimeSlots))
   });
+
+  it('passes props through to children', async () => {
+    await asyncRender(<AppointmentFormLoader testProp={123} />);
+    expect(AppointmentFormExports.AppointmentForm).toHaveBeenCalledWith(
+      expect.objectContaining({ testProp: 123 }),
+      expect.anything()
+    );
+  });
+
 });

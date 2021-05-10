@@ -6,8 +6,9 @@ import { AppointmentForm } from '../src/components/AppointmentForm';
 import 'whatwg-fetch';
 
 describe('AppointmentForm', () => {
-  let render, getFormField, labelFor, startsAtField, getForm, getElement, change, submit, fetchSpy;
+  let render, getFormField, labelFor, startsAtField, getForm, getElement, change, submit, fetchSpy, asyncRender;
   const formId = 'appointment';
+  const customer = { id: 123 };
 
   beforeEach(() => {
     ({render,
@@ -18,7 +19,8 @@ describe('AppointmentForm', () => {
       getForm,
       getElement,
       change,
-      submit
+      submit,
+      asyncRender
     } = createContainer());
     fetchSpy = jest.spyOn(window, 'fetch');
   });
@@ -91,33 +93,34 @@ describe('AppointmentForm', () => {
 
   const itSubmitsExistingValue = (fieldName, {value}) => {
     it('saves existing value when submitted', async () => {
+      const submitSpy = jest.fn();
+      fetchSpy.mockImplementationOnce(() => fetchResponseOk())
       render(
         <AppointmentForm
           {...{ [fieldName]: value}}
-          onSubmit={props => {
-            expect(props[fieldName]).toEqual(value)
-            }
-          }
+          customer={customer}
+          onSubmit={submitSpy}
         />
       );
       await submit(getForm(formId));
-      expect.hasAssertions();
+      expect(submitSpy).toHaveBeenCalledWith(expect.objectContaining({[fieldName]: value}))
     });
   };
 
   const itSubmitsNewValue = (fieldName, {existingValue, newValue}) => {
     it('saves new value when submitted', async () => {
+      const submitSpy = jest.fn();
+      fetchSpy.mockImplementationOnce(() => fetchResponseOk())
       render(
         <AppointmentForm
           {...{ [fieldName]: existingValue }}
-          onSubmit={props =>
-            expect(props[fieldName]).toEqual(newValue)
-          }
+          customer={customer}
+          onSubmit={submitSpy}
         />
       );
       change(getFormField({formId, name: fieldName}), withEvent(fieldName, newValue));
       await submit(getForm(formId));
-      expect.hasAssertions();
+      expect(submitSpy).toHaveBeenCalledWith(expect.objectContaining({[fieldName]: newValue}))
     });
   };
 
@@ -277,38 +280,36 @@ describe('AppointmentForm', () => {
     });
 
     it('saves existing value when submitted', async () => {
-      expect.hasAssertions();
+      const submitSpy = jest.fn();
+      fetchSpy.mockImplementationOnce(() => fetchResponseOk())
       render(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
           startsAt={availableTimeSlots[0].startsAt}
-          onSubmit={({ startsAt }) =>
-            expect(startsAt).toEqual(
-              availableTimeSlots[0].startsAt
-            )
-          }
+          onSubmit={submitSpy}
+          customer={customer}
         />
       );
-      submit(getForm(formId));
+      await submit(getForm(formId));
+      expect(submitSpy).toHaveBeenCalledWith(expect.objectContaining({startsAt: availableTimeSlots[0].startsAt}))
     });
 
-    it('saves new value when submitted', () => {
-      expect.hasAssertions();
+    it('saves new value when submitted', async () => {
+      const submitSpy = jest.fn();
+      fetchSpy.mockImplementationOnce(() => fetchResponseOk())
       render(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
           startsAt={availableTimeSlots[0].startsAt}
-          onSubmit={({ startsAt }) =>
-            expect(startsAt).toEqual(
-              availableTimeSlots[1].startsAt
-            )
-          }
+          onSubmit={submitSpy}
+          customer={customer}
         />
       );
       change(startsAtField(1), withEvent('startsAt', availableTimeSlots[1].startsAt.toString()));
-      submit(getForm(formId));
+      await submit(getForm(formId));
+      expect(submitSpy).toHaveBeenCalledWith(expect.objectContaining({startsAt: availableTimeSlots[1].startsAt}))
     });
 
     it('filters appointments by selected stylist', () => {
@@ -327,6 +328,7 @@ describe('AppointmentForm', () => {
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
+          customer={customer}
         />
       );
 
@@ -349,17 +351,18 @@ describe('AppointmentForm', () => {
         today={today}
         startsAt={availableTimeSlots[0].startsAt}
         onSubmit={() => {}}
+        customer={customer}
       />
     );
     change(startsAtField(1), withEvent('startsAt', availableTimeSlots[1].startsAt.toString()));
-    submit(getForm(formId));
+    await submit(getForm(formId));
 
-    expect(fetchSpy).lastCalledWith('/appointments',
+    expect(fetchSpy).toHaveBeenLastCalledWith('/appointments',
       expect.objectContaining({
         method: 'POST',
         credentials: 'same-origin',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({"startsAt": availableTimeSlots[1].startsAt})
+        body: JSON.stringify({"startsAt": availableTimeSlots[1].startsAt, customer: customer.id})
       })
     );
   });
@@ -372,6 +375,7 @@ describe('AppointmentForm', () => {
         today={today}
         startsAt={availableTimeSlots[0].startsAt}
         onSubmit={() => {}}
+        customer={customer}
       />
     );
 
@@ -383,7 +387,7 @@ describe('AppointmentForm', () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseOk({}));
     const onSubmitSpy = jest.fn();
 
-    render(<AppointmentForm onSubmit={onSubmitSpy}/>);
+    render(<AppointmentForm onSubmit={onSubmitSpy} customer={customer}/>);
     await submit(getForm(formId));
 
     expect(onSubmitSpy).toHaveBeenCalled();
@@ -391,7 +395,7 @@ describe('AppointmentForm', () => {
 
   it('renders error message when fetch call fails', async () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
-    render(<AppointmentForm onSubmit={() => {}}/>);
+    render(<AppointmentForm customer={customer}/>);
     await submit(getForm(formId));
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
@@ -399,9 +403,8 @@ describe('AppointmentForm', () => {
   });
 
   it('state is cleared when the form is submitted again', async () => {
-
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
-    render(<AppointmentForm onSubmit={() => {}}/>);
+    render(<AppointmentForm  onSubmit={() => {}} customer={customer}/>);
     await submit(getForm(formId));
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
@@ -409,5 +412,12 @@ describe('AppointmentForm', () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseOk({}));
     await submit(getForm(formId));
     expect(getElement('.error')).toBeNull();
+  });
+
+  it('passes the customer id to fetch when submitting', async () => {
+    const customer = { id: 123 };
+    render(<AppointmentForm customer={customer}  onSubmit={() => {}}/>);
+    await submit(getForm(formId));
+    expect(fetchRequestBodyOf(fetchSpy)).toMatchObject({customer: customer.id});
   });
 });
