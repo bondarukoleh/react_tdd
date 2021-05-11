@@ -100,3 +100,13 @@ methods for setting availableTimeSlots: the original prop and the new fetch call
 adds complication. Do we set the initial value to the prop and then overwrite it with the data 
 from fetch? Or perhaps we should get rid of the prop entirely, in which case we'll need to
 rewrite our tests to use a stubbed fetch response to set availableTimeSlots.
+
+**shallow rendering (react-test-renderer package)** lets you render a component “one level deep”
+and assert facts about what its render method returns, without worrying about the behavior of 
+child components, which are not instantiated or rendered. This does not require a DOM. So it 
+stops at all *custom* components. All primitives, such as div, ol, and table, will be rendered 
+along with their children. The root shallow rendered component itself will have all of its hooks
+and side effects run, so we can continue to test any kind of life cycle.
+
+React `props.children` can have different types: it can be an `object`, a `string` value,
+an `array`, or it can even just `not defined` at all.

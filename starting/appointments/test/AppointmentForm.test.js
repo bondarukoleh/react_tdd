@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactTestUtils from 'react-dom/test-utils';
 import { createContainer, withEvent } from './helpers/domManipulations';
 import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf } from './helpers/spyHelpers';
 import { AppointmentForm } from '../src/components/AppointmentForm';
