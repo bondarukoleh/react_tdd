@@ -3,7 +3,6 @@ import {childrenOf, createShallowRenderer, predicateByType} from '../helpers/sha
 
 describe('childrenOf', () => {
   it('returns no children', () => {
-    console.log(<div/>);
     expect(childrenOf(<div/>)).toEqual([]);
   });
 
@@ -89,7 +88,7 @@ describe('elementsMatching', () => {
         </div>
       </TestComponent>
     );
-    expect(elementsMatching(type('p'))).toEqual([<p>A</p>]);
+    expect(elementsMatching(predicateByType('p'))).toEqual([<p>A</p>]);
   });
 });
 

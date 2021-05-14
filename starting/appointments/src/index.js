@@ -1,16 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'whatwg-fetch';
-import { AppointmentForm } from './components/AppointmentForm';
-import {
-  sampleAvailableTimeSlots,
-  sampleStylists
-} from './data/sampleData';
 import './styles.css'
+import {App} from "./App";
 
 ReactDOM.render(
-  <AppointmentForm
-    availableTimeSlots={sampleAvailableTimeSlots}
-  />,
+  <App/>,
   document.getElementById('root')
 );

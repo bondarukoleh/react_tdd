@@ -91,6 +91,7 @@ act(() => {button.dispatchEvent(new MouseEvent('click', {bubbles: true}))});
 ```
 
 Jest mock function - pretty powerful thing that helps you to mock your functions;
+So we can stub out child components and use *spies* to assert that they were instantiated with the right props.
 
 **container component** - This is a component whose purpose is simply to pull data together and pass
 it on to another component. \
@@ -106,7 +107,7 @@ and assert facts about what its render method returns, without worrying about th
 child components, which are not instantiated or rendered. This does not require a DOM. So it 
 stops at all *custom* components. All primitives, such as div, ol, and table, will be rendered 
 along with their children. The root shallow rendered component itself will have all of its hooks
-and side effects run, so we can continue to test any kind of life cycle.
+and side effects run, so we can continue to test any kind of life cycle. \
 
 React `props.children` can have different types: it can be an `object`, a `string` value,
 an `array`, or it can even just `not defined` at all.
