@@ -6,7 +6,7 @@ import 'whatwg-fetch';
 
 describe('CustomerForm', () => {
   let fetchSpy;
-  let render, getFormField, labelFor, getForm, getElement, change, submit;
+  let render, getFormField, labelFor, getForm, getElement, change, submit, blur;
   const formId = 'customer';
 
   beforeEach(() => {
@@ -18,7 +18,8 @@ describe('CustomerForm', () => {
       getElement,
       getForm,
       change,
-      submit
+      submit,
+      blur
     } = createContainer());
     fetchSpy = jest.spyOn(window, 'fetch');
   });
@@ -184,5 +185,12 @@ describe('CustomerForm', () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseOk(customer));
     await submit(getForm(formId));
     expect(getElement('.error')).toBeNull();
+  });
+
+  it('displays error after blur when first name field is blank', async () => {
+    render(<CustomerForm />);
+    await blur(getFormField({formId: 'customer', name: 'firstName'}), withEvent('firstName', ' '));
+    expect(getElement('.error')).not.toBeNull();
+    expect(getElement('.error').textContent).toMatch('firstName is required');
   });
 });

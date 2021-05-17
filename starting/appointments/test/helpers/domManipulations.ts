@@ -17,6 +17,7 @@ type CreateContainerT = {
   click: (element: HTMLElement, eventData: {}) => void,
   change: (element: HTMLElement, eventData: {}) => void,
   submit: (element: HTMLElement, eventData: {}) => Promise<void>,
+  blur: (element: HTMLElement, eventData: {}) => Promise<void>,
   asyncRender: (component: ReactElement) => Promise<void>
 }
 
@@ -24,6 +25,7 @@ enum EventsT {
   CLICK = 'click',
   CHANGE = 'change',
   SUBMIT = 'submit',
+  BLUR = 'blur',
 }
 
 export const createContainer = (): CreateContainerT => {
@@ -70,6 +72,7 @@ export const createContainer = (): CreateContainerT => {
     click: simulateEvent(EventsT.CLICK),
     change: simulateEvent(EventsT.CHANGE),
     submit: asyncSimulateEvent(EventsT.SUBMIT),
+    blur: asyncSimulateEvent(EventsT.BLUR),
     asyncRender
   }
 }
