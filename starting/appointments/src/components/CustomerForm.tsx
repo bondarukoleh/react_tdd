@@ -13,45 +13,83 @@ export const CustomerForm = ({firstName, lastName, phoneNumber, onSave}) => {
     }));
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const result = await window.fetch('/customers', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customer)
-    });
-    if (result.ok) {
-      error && setError(false);
-      onSave(await result.json());
-    } else {
-      setError(true)
-    }
-  };
-
   const Error = () => (
     <div className="error">An error occurred during save.</div>
   );
 
-  const required = (name, value): string | undefined => {
-    return !value || value.trim() === ''
-      ? `${name} is required`
-      : undefined;
+  const match = (regex, description) => value => !value.match(regex) ? description : undefined;
+
+  const list = (...validators) => {
+    return (value) => {
+      return validators.reduce((result, validator) => {
+        return result || validator(value)
+      }, undefined);
+    }
+  }
+
+  const anyErrors = errors => Object.values(errors).some(error => error !== undefined);
+
+  const hasErrors = (fieldName): boolean => {
+    return !!validationErrors[fieldName]
+  }
+
+  const required = (name): (value: any) => string | undefined => {
+    return (value: any) => {
+      return !value || value.trim() === ''
+        ? `${name} is required`
+        : undefined;
+    }
+  }
+
+  const validators = {
+    firstName: required('First name'),
+    lastName: required('Last name'),
+    phoneNumber: list(
+      required('Phone number'),
+      match(
+        /^[0-9+()\- ]*$/,
+        'Only numbers, spaces and these symbols are allowed: ( ) + -'
+      )
+    )
   }
 
   const handleBlur = ({target}) => {
     setValidationErrors({
       ...validationErrors,
-      [target.name]: required(target.name, target.value)
+      [target.name]: validators[target.name](target.value)
     });
   };
 
-  const hasErrors = (): boolean => {
-    return !!Object.keys(validationErrors).length
-  }
+  const validateMany = fields =>
+    Object.entries(fields).reduce(
+      (result, [name, value]) => ({
+        ...result,
+        [name]: validators[name](value)
+      }), {});
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationResult = validateMany(customer);
+    if (!anyErrors(validationResult)) {
+      const result = await window.fetch('/customers', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(customer)
+      });
+      if (result.ok) {
+        error && setError(false);
+        onSave(await result.json());
+      } else {
+        setError(true)
+      }
+    } else {
+      setValidationErrors(validationResult);
+    }
+  };
 
   const renderValidationErrorFor = (fieldName: string) => {
-    if (hasErrors()) {
+    if (hasErrors(fieldName)) {
       return (
         <span className="error">{validationErrors[fieldName]}</span>
       );

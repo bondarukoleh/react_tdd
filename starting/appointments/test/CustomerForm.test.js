@@ -5,6 +5,11 @@ import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf} from './helpers
 import 'whatwg-fetch';
 
 describe('CustomerForm', () => {
+  const validCustomer = {
+    firstName: 'first',
+    lastName: 'last',
+    phoneNumber: '123456789'
+  };
   let fetchSpy;
   let render, getFormField, labelFor, getForm, getElement, change, submit, blur;
   const formId = 'customer';
@@ -27,12 +32,12 @@ describe('CustomerForm', () => {
   afterEach(() => window.fetch.mockRestore());
 
   it('renders a form', () => {
-    render(<CustomerForm/>);
+    render(<CustomerForm {...validCustomer} />);
     expect(getForm(formId)).not.toBeNull();
   });
 
   it('has a submit button', () => {
-    render(<CustomerForm/>);
+    render(<CustomerForm {...validCustomer} />);
     const submitButton = getElement('input[type="submit"]');
     expect(submitButton).not.toBeNull();
   });
@@ -45,26 +50,26 @@ describe('CustomerForm', () => {
 
   const itRendersAsATextBox = fieldName =>
     it('renders as a text box', () => {
-      render(<CustomerForm/>);
+      render(<CustomerForm {...validCustomer} />);
       expectToBeInputFieldOfTypeText(getFormField({formId, name: fieldName}));
     });
 
   const itIncludesTheExistingValue = fieldName =>
     it('includes the existing value', () => {
-      render(<CustomerForm {...{[fieldName]: 'value'}} />);
+      render(<CustomerForm {...validCustomer} {...{[fieldName]: 'value'}} />);
       expect(getFormField({formId, name: fieldName}).value).toEqual('value');
     });
 
   const itRendersALabel = (fieldName, text) =>
     it('renders a label', () => {
-      render(<CustomerForm/>);
+      render(<CustomerForm {...validCustomer} />);
       expect(labelFor(fieldName)).not.toBeNull();
       expect(labelFor(fieldName).textContent).toEqual(text);
     });
 
   const itAssignsAnIdThatMatchesTheLabelId = fieldName =>
     it('assigns an id that matches the label id', () => {
-      render(<CustomerForm/>);
+      render(<CustomerForm {...validCustomer} />);
       expect(getFormField({formId, name: fieldName}).id).toEqual(fieldName);
     });
 
@@ -73,6 +78,7 @@ describe('CustomerForm', () => {
       fetchSpy.mockImplementationOnce(() => fetchResponseOk({[fieldName]: value}));
       render(
         <CustomerForm
+          {...validCustomer}
           {...{[fieldName]: value}}
         />
       );
@@ -85,6 +91,7 @@ describe('CustomerForm', () => {
       fetchSpy.mockImplementationOnce(() => fetchResponseOk({[fieldName]: value}));
       render(
         <CustomerForm
+          {...validCustomer}
           {...{[fieldName]: 'existingValue'}}
         />
       );
@@ -124,7 +131,7 @@ describe('CustomerForm', () => {
   it('calls fetch with the right properties when submitting data', async () => {
 
     fetchSpy.mockImplementationOnce(() => fetchResponseOk({}));
-    render(<CustomerForm/>);
+    render(<CustomerForm {...validCustomer} />);
 
     submit(getForm(formId));
 
@@ -139,7 +146,7 @@ describe('CustomerForm', () => {
 
   it('prevents the default action when submitting the form', async () => {
     fetchSpy.mockImplementation(() => fetchResponseOk({}));
-    render(<CustomerForm/>);
+    render(<CustomerForm {...validCustomer} />);
 
     submit(getForm(formId), withEvent('preventDefault', fetchSpy));
     expect(fetchSpy).toHaveBeenCalled();
@@ -149,7 +156,7 @@ describe('CustomerForm', () => {
     const customer = {firstName: 'Oleh'};
     fetchSpy.mockImplementationOnce(() => fetchResponseOk(customer));
     const saveSpy = jest.fn();
-    render(<CustomerForm onSave={saveSpy} {...customer} />);
+    render(<CustomerForm {...validCustomer}  onSave={saveSpy} {...customer} />);
     await submit(getForm(formId))
     expect(saveSpy).toHaveBeenCalled();
     expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining(customer));
@@ -159,14 +166,14 @@ describe('CustomerForm', () => {
     const saveSpy = jest.fn();
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
 
-    render(<CustomerForm onSave={saveSpy}/>);
+    render(<CustomerForm {...validCustomer} onSave={saveSpy}/>);
     await submit(getForm(formId));
     expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('renders error message when fetch call fails', async () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
-    render(<CustomerForm/>);
+    render(<CustomerForm {...validCustomer} />);
     await submit(getForm(formId));
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
@@ -177,7 +184,7 @@ describe('CustomerForm', () => {
     const customer = {firstName: 'Oleh'};
 
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
-    render(<CustomerForm/>);
+    render(<CustomerForm {...validCustomer} />);
     await submit(getForm(formId));
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
@@ -188,9 +195,71 @@ describe('CustomerForm', () => {
   });
 
   it('displays error after blur when first name field is blank', async () => {
-    render(<CustomerForm />);
-    await blur(getFormField({formId: 'customer', name: 'firstName'}), withEvent('firstName', ' '));
+    render(<CustomerForm {...validCustomer} />);
+    blur(getFormField({formId: 'customer', name: 'firstName'}), withEvent('firstName', ' '));
     expect(getElement('.error')).not.toBeNull();
-    expect(getElement('.error').textContent).toMatch('firstName is required');
+    expect(getElement('.error').textContent).toMatch('First name is required');
+  });
+
+  it('does not submit the form when there are validation errors', async () => {
+      render(<CustomerForm />);
+      await submit(getForm('customer'));
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+  it('renders validation errors after submission fails', async () => {
+    render(<CustomerForm />);
+    await submit(getForm('customer'));
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(getElement('.error')).not.toBeNull();
+  });
+
+  describe('validation', () => {
+    const itInvalidatesFieldWithValue = (
+      fieldName,
+      value,
+      description
+    ) => {
+      it(`displays error after blur when ${fieldName} field is '${value}'`, () => {
+        render(<CustomerForm {...validCustomer} />);
+
+        blur(getFormField({formId: 'customer', name: fieldName}), withEvent(fieldName, value));
+
+        expect(getElement('.error')).not.toBeNull();
+        expect(getElement('.error').textContent).toMatch(description);
+      });
+    };
+
+    itInvalidatesFieldWithValue(
+      'firstName',
+      ' ',
+      'First name is required'
+    );
+    itInvalidatesFieldWithValue(
+      'lastName',
+      ' ',
+      'Last name is required'
+    );
+    itInvalidatesFieldWithValue(
+      'phoneNumber',
+      ' ',
+      'Phone number is required'
+    );
+    itInvalidatesFieldWithValue(
+      'phoneNumber',
+      'invalid',
+      'Only numbers, spaces and these symbols are allowed: ( ) + -'
+    );
+
+    it('accepts standard phone number characters when validating', () => {
+      render(<CustomerForm {...validCustomer} />);
+
+      blur(
+        getFormField({formId: 'customer', name: 'phoneNumber'}),
+        withEvent('phoneNumber', '0123456789+()- ')
+      );
+
+      expect(getElement('.error')).toBeNull();
+    });
   });
 });

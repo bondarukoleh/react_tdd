@@ -17,7 +17,7 @@ type CreateContainerT = {
   click: (element: HTMLElement, eventData: {}) => void,
   change: (element: HTMLElement, eventData: {}) => void,
   submit: (element: HTMLElement, eventData: {}) => Promise<void>,
-  blur: (element: HTMLElement, eventData: {}) => Promise<void>,
+  blur: (element: HTMLElement, eventData: {}) => void,
   asyncRender: (component: ReactElement) => Promise<void>
 }
 
@@ -48,7 +48,7 @@ export const createContainer = (): CreateContainerT => {
   const getElements = (selector: string) => container.querySelectorAll(selector) as NodeList;
   const simulateEvent = (eventName: EventsT) => {
     return (element: HTMLElement, eventData: {}): void => {
-      act(() => ReactTestUtils.Simulate[eventName](element, eventData))
+      return ReactTestUtils.Simulate[eventName](element, eventData)
     }
   };
 
@@ -72,7 +72,7 @@ export const createContainer = (): CreateContainerT => {
     click: simulateEvent(EventsT.CLICK),
     change: simulateEvent(EventsT.CHANGE),
     submit: asyncSimulateEvent(EventsT.SUBMIT),
-    blur: asyncSimulateEvent(EventsT.BLUR),
+    blur: simulateEvent(EventsT.BLUR),
     asyncRender
   }
 }
