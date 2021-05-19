@@ -2,7 +2,6 @@ import * as ReactDOM from 'react-dom';
 import * as ReactTestUtils from 'react-dom/test-utils';
 import {ReactElement} from "react";
 import {EventSimulator} from "react-dom/test-utils";
-
 const {act} = ReactTestUtils;
 
 type CreateContainerT = {
@@ -13,12 +12,14 @@ type CreateContainerT = {
   startsAtField: (index: number) => Element,
   getForm: (id: string) => HTMLFormElement
   getElement: (selector: string) => Element
-  getElements: (selector: string) => NodeList,
+  getElements: (selector: string) => Element[],
   click: (element: HTMLElement, eventData: {}) => void,
   change: (element: HTMLElement, eventData: {}) => void,
   submit: (element: HTMLElement, eventData: {}) => Promise<void>,
   blur: (element: HTMLElement, eventData: {}) => void,
   asyncRender: (component: ReactElement) => Promise<void>
+  asyncClick: (element: HTMLElement, eventData: {}) => Promise<void>,
+  asyncChange: (element: HTMLElement, eventData: {}) => Promise<void>,
 }
 
 enum EventsT {
@@ -40,12 +41,12 @@ export const createContainer = (): CreateContainerT => {
     })
   }
   const asyncRender = async component => {
-    return act(async () => {
+    await act(async () => {
       ReactDOM.render(component, container)
     });
   };
   const getElement = (selector: string) => container.querySelector(selector) as Element;
-  const getElements = (selector: string) => container.querySelectorAll(selector) as NodeList;
+  const getElements = (selector: string) => Array.from(container.querySelectorAll(selector)) as Element[];
   const simulateEvent = (eventName: EventsT) => {
     return (element: HTMLElement, eventData: {}): void => {
       return ReactTestUtils.Simulate[eventName](element, eventData)
@@ -70,7 +71,9 @@ export const createContainer = (): CreateContainerT => {
     getElement,
     getElements,
     click: simulateEvent(EventsT.CLICK),
+    asyncClick: asyncSimulateEvent(EventsT.CLICK),
     change: simulateEvent(EventsT.CHANGE),
+    asyncChange: asyncSimulateEvent(EventsT.CHANGE),
     submit: asyncSimulateEvent(EventsT.SUBMIT),
     blur: simulateEvent(EventsT.BLUR),
     asyncRender
