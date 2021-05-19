@@ -50,7 +50,7 @@ export const App = () => {
 
   switch(view) {
     case Routes.addCustomer:
-      return <CustomerForm onSave={customerSave} />
+      return <CustomerForm onSave={customerSave} {...customer} />
     case Routes.addAppointment:
       return <AppointmentFormLoader customer={customer} onSubmit={appointmentSubmit} />
     default:

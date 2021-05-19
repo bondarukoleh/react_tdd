@@ -75,3 +75,10 @@ A **spy** is a test double that records the arguments it is called with so that 
 A **stub** is a test double that always returns the same value when it is invoked. You decide what this value is when
 you construct the stub.
 
+**Get out from the framework**
+One of the major rules of good architectural design is that you get out of framework land as soon as possible.
+You want to be dealing with plain old JavaScript objects as often as possible. Any kind of "business logic" should be
+extracted out as soon as possible. \ 
+There are a few different reasons for that. First, testing components is harder than testing plain objects. Second,
+the framework changes at breakneck speed, but JavaScript itself doesn't.
+

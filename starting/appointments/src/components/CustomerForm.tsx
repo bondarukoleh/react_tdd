@@ -1,9 +1,18 @@
 import * as React from "react";
 import { useState } from 'react';
+import {
+  required,
+  match,
+  list,
+  hasError,
+  validateMany,
+  anyErrors
+} from '../helpers/formValidation';
 
 export const CustomerForm = ({firstName, lastName, phoneNumber, onSave}) => {
   const [customer, setCustomer] = useState({firstName, lastName, phoneNumber});
   const [error, setError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
   const handleChange = ({target}) => {
@@ -16,30 +25,6 @@ export const CustomerForm = ({firstName, lastName, phoneNumber, onSave}) => {
   const Error = () => (
     <div className="error">An error occurred during save.</div>
   );
-
-  const match = (regex, description) => value => !value.match(regex) ? description : undefined;
-
-  const list = (...validators) => {
-    return (value) => {
-      return validators.reduce((result, validator) => {
-        return result || validator(value)
-      }, undefined);
-    }
-  }
-
-  const anyErrors = errors => Object.values(errors).some(error => error !== undefined);
-
-  const hasErrors = (fieldName): boolean => {
-    return !!validationErrors[fieldName]
-  }
-
-  const required = (name): (value: any) => string | undefined => {
-    return (value: any) => {
-      return !value || value.trim() === ''
-        ? `${name} is required`
-        : undefined;
-    }
-  }
 
   const validators = {
     firstName: required('First name'),
@@ -54,42 +39,45 @@ export const CustomerForm = ({firstName, lastName, phoneNumber, onSave}) => {
   }
 
   const handleBlur = ({target}) => {
-    setValidationErrors({
-      ...validationErrors,
-      [target.name]: validators[target.name](target.value)
-    });
+    const result = validateMany(validators, {[target.name]: target.value});
+    setValidationErrors({...validationErrors, ...result});
   };
 
-  const validateMany = fields =>
-    Object.entries(fields).reduce(
-      (result, [name, value]) => ({
-        ...result,
-        [name]: validators[name](value)
-      }), {});
+  const postCustomer = (customer) => window.fetch('/customers', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(customer)
+  });
+
+  const doSubmit = async () => {
+
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationResult = validateMany(customer);
+    const validationResult = validateMany(validators, customer);
     if (!anyErrors(validationResult)) {
-      const result = await window.fetch('/customers', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customer)
-      });
+      setSubmitting(true);
+      const result = await postCustomer(customer);
+      setSubmitting(false);
       if (result.ok) {
         error && setError(false);
         onSave(await result.json());
+      } else if (result.status === 422) {
+        const response = await result.json();
+        setValidationErrors(response.errors);
       } else {
         setError(true)
       }
     } else {
+      setSubmitting(false);
       setValidationErrors(validationResult);
     }
   };
 
   const renderValidationErrorFor = (fieldName: string) => {
-    if (hasErrors(fieldName)) {
+    if (hasError(validationErrors, fieldName)) {
       return (
         <span className="error">{validationErrors[fieldName]}</span>
       );
@@ -130,8 +118,9 @@ export const CustomerForm = ({firstName, lastName, phoneNumber, onSave}) => {
         onChange={handleChange}
         onBlur={handleBlur}
       />
-      <input type="submit" value="Add" />
+      <input type="submit" value="Add" disabled={submitting} />
       {renderValidationErrorFor('phoneNumber')}
+      {submitting && <span className="submittingIndicator" />}
     </form>
   );
 };

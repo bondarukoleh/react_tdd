@@ -3,6 +3,8 @@ import {createContainer, withEvent} from './helpers/domManipulations';
 import {CustomerForm} from '../src/components/CustomerForm';
 import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf} from './helpers/spyHelpers';
 import 'whatwg-fetch';
+import * as ReactTestUtils from "react-dom/test-utils";
+import {act} from "react-dom/test-utils";
 
 describe('CustomerForm', () => {
   const validCustomer = {
@@ -214,6 +216,16 @@ describe('CustomerForm', () => {
     expect(getElement('.error')).not.toBeNull();
   });
 
+  it('renders field validation errors from server', async () => {
+    const errors = {
+      phoneNumber: 'Phone number already exists in the system'
+    };
+    fetchSpy.mockReturnValue(fetchResponseError(422, {errors}));
+    render(<CustomerForm {...validCustomer} />);
+    await submit(getForm('customer'));
+    expect(getElement('.error').textContent).toMatch(errors.phoneNumber);
+  });
+
   describe('validation', () => {
     const itInvalidatesFieldWithValue = (
       fieldName,
@@ -260,6 +272,39 @@ describe('CustomerForm', () => {
       );
 
       expect(getElement('.error')).toBeNull();
+    });
+  });
+
+  it('displays indicator when form is submitting', async () => {
+    render(<CustomerForm {...validCustomer} />);
+    /* We need sync act here to not wait for the submit to finish, to get the submitting loader (indicator) */
+    act(() => {
+      ReactTestUtils.Simulate.submit(getForm('customer'));
+    });
+    await act(async() => {
+      expect(getElement('.submittingIndicator')).not.toBeNull();
+    });
+  });
+
+  it('initially does not display the submitting indicator', () => {
+    render(<CustomerForm {...validCustomer} />);
+    expect(getElement('.submittingIndicator')).toBeNull();
+  });
+
+  it('hides indicator when form has submitted', async () => {
+    render(<CustomerForm {...validCustomer} />);
+    fetchSpy.mockReturnValue(fetchResponseOk());
+    await submit(getForm('customer'));
+    expect(getElement('.submittingIndicator')).toBeNull();
+  });
+
+  it('submit button disabled when form submitting', async () => {
+    render(<CustomerForm {...validCustomer} />);
+    act(() => {
+      ReactTestUtils.Simulate.submit(getForm('customer'));
+    });
+    await act(async() => {
+      expect(getElement('input[type="submit"]').disabled).toEqual(true)
     });
   });
 });

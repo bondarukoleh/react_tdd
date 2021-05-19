@@ -13,18 +13,18 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
+        exclude: [/node_modules/, '/server/'],
         loader: 'babel-loader'
       },
       {
         test: /\.ts/,
         use: "ts-loader",
-        exclude: /node_modules/
+        exclude: [/node_modules/, '/server/'],
       },
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
-        exclude: [/node_modules/]
+        exclude: [/node_modules/, '/server/'],
       },
     ]
   },
