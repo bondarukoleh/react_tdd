@@ -1,16 +1,29 @@
 import * as React from 'react';
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 
 export const CustomerSearch = () => {
+  const [customers, setCustomers] = useState([]);
+
   useEffect(() => {
-    const fetchData = () =>
-      window.fetch('/customers', {
+    const fetchData = async () => {
+      const result = await window.fetch('/customers', {
         method: 'GET',
         credentials: 'same-origin',
         headers: {'Content-Type': 'application/json'}
       });
+      setCustomers(await result.json());
+    }
     fetchData();
   }, []);
+
+  const CustomerRow = ({ customer }) => (
+    <tr>
+      <td>{customer.firstName}</td>
+      <td>{customer.lastName}</td>
+      <td>{customer.phoneNumber}</td>
+      <td />
+    </tr>
+  );
 
   return (
     <table>
@@ -22,6 +35,9 @@ export const CustomerSearch = () => {
         <th>Actions</th>
       </tr>
       </thead>
+      <tbody>
+        {customers.map(customer => <CustomerRow customer={customer} key={customer.id}/>)}
+      </tbody>
     </table>
   );
 };

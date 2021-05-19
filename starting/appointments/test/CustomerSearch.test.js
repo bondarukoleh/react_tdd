@@ -56,19 +56,23 @@ describe('CustomerSearch', () => {
   });
 
   it('renders all customer data in a table row', async () => {
+    const [{firstName, lastName, phoneNumber}] = oneCustomer;
+
     window.fetch.mockReturnValue(fetchResponseOk(oneCustomer));
     await asyncRender(<CustomerSearch/>);
     const columns = getElements('table > tbody > tr > td');
-    expect(columns[0].textContent).toEqual('A');
-    expect(columns[1].textContent).toEqual('B');
-    expect(columns[2].textContent).toEqual('1');
+    expect(columns[0].textContent).toEqual(firstName);
+    expect(columns[1].textContent).toEqual(lastName);
+    expect(columns[2].textContent).toEqual(phoneNumber);
   });
 
   it('renders multiple customer rows', async () => {
+    const [, secondCustomer] = twoCustomers;
+
     window.fetch.mockReturnValue(fetchResponseOk(twoCustomers));
     await asyncRender(<CustomerSearch/>);
     const rows = getElements('table tbody tr');
-    expect(rows[1].childNodes[0].textContent).toEqual('C');
+    expect(rows[1].childNodes[0].textContent).toEqual(secondCustomer.firstName);
   });
 
   it('has a next button', async () => {
