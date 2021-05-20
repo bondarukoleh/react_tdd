@@ -47,7 +47,7 @@
     "@babel/runtime": "7.13.10",
     "express": "4.17.1",
     "faker": "5.5.3",
-    "graphql": "15.5.0",
+    "graphql": "14.0.0",
     "morgan": "1.10.0",
     "raw-loader": "4.0.2",
     "react": "17.0.2",
