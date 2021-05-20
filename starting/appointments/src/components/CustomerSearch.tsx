@@ -3,10 +3,14 @@ import {useEffect, useState, Fragment, useCallback} from "react";
 
 export const CustomerSearch = () => {
   const [customers, setCustomers] = useState([]);
-  const [queryString, setQueryString] = useState('');
+  const [queryStrings, setQueryStrings] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
+      let queryString = '';
+      if (queryStrings.length > 0) {
+        queryString = queryStrings[queryStrings.length - 1]
+      };
       const result = await window.fetch(`/customers${queryString}`, {
         method: 'GET',
         credentials: 'same-origin',
@@ -15,17 +19,17 @@ export const CustomerSearch = () => {
       setCustomers(await result.json());
     }
     fetchData();
-  }, [queryString]);
+  }, [queryStrings]);
 
   const handleNext = useCallback( async () => {
     const after = customers[customers.length - 1].id;
     const newQueryString = `?after=${after}`;
-    setQueryString(newQueryString);
-  }, [customers])
+    setQueryStrings((oldQueries) => [...oldQueries, newQueryString]);
+  }, [customers, queryStrings])
 
   const handlePrevious = useCallback(() => {
-    setQueryString('')
-  }, []);
+    setQueryStrings((oldQueries) => oldQueries.slice(0, -1));
+  }, [queryStrings]);
 
   const CustomerRow = ({ customer }) => {
     return (
