@@ -123,19 +123,10 @@ export function buildApp(customerData, appointmentData, timeSlots) {
 
 function buildSearchParams({ searchTerm, after, limit, orderBy, orderDirection }) {
   const searchParams = {};
-  if (searchTerm)
-    searchParams.searchTerms = buildSearchTerms(searchTerm);
+  if (searchTerm) searchParams.searchTerms = Array.isArray(searchTerm) ? searchTerm : [searchTerm];
   if (after) searchParams.after = parseInt(after);
   if (limit) searchParams.limit = parseInt(limit);
   if (orderBy) searchParams.orderBy = orderBy;
   if (orderDirection) searchParams.orderDirection = orderDirection;
   return searchParams;
-}
-
-function buildSearchTerms(searchTerm) {
-  if(!searchTerm) return undefined;
-  if(Array.isArray(searchTerm)) {
-    return searchTerm;
-  }
-  return [searchTerm];
 }

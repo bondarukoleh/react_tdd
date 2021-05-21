@@ -6,10 +6,6 @@ Array.prototype.unique = function() {
   });
 }
 
-Array.prototype.flatMap = function(f) {
-  return Array.prototype.concat.apply([], this.map(f));
-};
-
 function generateFakeCustomer(id) {
   return {
     id,
@@ -75,26 +71,34 @@ export class Customers {
     return {};
   }
 
-  searchForTerm(term) {
-    var startsWith = new RegExp(`^${term}`, 'i');
-    return Object.keys(this.customers).filter(customerId => {
-      const customer = this.customers[customerId];
+  customerMatched(customer, searchParams) {
+    const customerMatchedByParam = searchParams.map(searchParam => {
+      const startsWith = new RegExp(`^${searchParam}`, 'i');
       return startsWith.test(customer.firstName)
-      || startsWith.test(customer.lastName)
-      || startsWith.test(customer.phoneNumber);
-    });
+        || startsWith.test(customer.lastName)
+        || startsWith.test(customer.phoneNumber);
+    })
+    return customerMatchedByParam.some(matched => matched === true);
   }
 
   search({ searchTerms, limit, orderBy, orderDirection, after }) {
     limit = limit || 10;
     orderBy = orderBy || 'firstName';
     searchTerms = searchTerms || [''];
-    const sorted = searchTerms
-      .flatMap(term => this.searchForTerm(term))
-      .unique()
-      .map(id => this.customers[id])
-      .sort((l, r) => orderDirection === 'desc' ?
-        r[orderBy].localeCompare(l[orderBy]) : l[orderBy].localeCompare(r[orderBy]));
+
+    let foundCustomers = Object.values(this.customers)
+      .filter(customer => this.customerMatched(customer, searchTerms))
+      .unique();
+
+    if (!foundCustomers.length) {
+      return [];
+    }
+
+    const sorted = foundCustomers
+      .map(({id}) => this.customers[id])
+      .sort((l, r) => orderDirection === 'desc'
+        ? r[orderBy].localeCompare(l[orderBy])
+        : l[orderBy].localeCompare(r[orderBy]));
 
     const afterPosition = after ? sorted.findIndex(c => c.id === after) + 1 : 0;
 
