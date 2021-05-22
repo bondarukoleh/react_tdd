@@ -184,9 +184,7 @@ describe('CustomerSearch', () => {
     const actionSpy = jest.fn();
     actionSpy.mockReturnValue('actions');
     window.fetch.mockReturnValue(fetchResponseOk(oneCustomer));
-    await asyncRender(
-      <CustomerSearch renderCustomerActions={actionSpy}/>
-    );
+    await asyncRender(<CustomerSearch renderCustomerActions={actionSpy}/>);
     const rows = getElements('table tbody td');
     expect(rows[rows.length - 1].textContent).toEqual('actions');
   });
@@ -203,9 +201,7 @@ describe('CustomerSearch', () => {
 
   it('initially disables previous page', async () => {
     await asyncRender(<CustomerSearch/>);
-    expect(
-      getElement('button#previous-page').getAttribute('disabled')
-    ).not.toBeNull();
+    expect(getElement('button#previous-page').getAttribute('disabled')).not.toBeNull();
   });
 
   it('enables previous page button once next page button has been clicked', async () => {
