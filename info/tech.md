@@ -111,3 +111,12 @@ and side effects run, so we can continue to test any kind of life cycle. \
 
 React `props.children` can have different types: it can be an `object`, a `string` value,
 an `array`, or it can even just `not defined` at all.
+
+
+Why test React Router with shallow render?
+If we use full render, we would lose information about which components were originally Link/Route
+components. Instead, we'd simply see clickable DOM elements, so we couldn't even assert that the
+right elements were displayed. \
+The second reason is that you don't need to wrap your component under test in a Router. This is a
+requirement of the Link, Route, and Switch components. While that is a wonderful feature at runtime,
+in our tests it's simply noise.
