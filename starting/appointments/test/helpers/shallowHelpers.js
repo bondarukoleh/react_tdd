@@ -9,6 +9,7 @@ export const predicateByType = typeName => {
 export const predicateById = id => element => element?.props?.id === id;
 export const predicateByClassName = className => element => element?.props?.className === className;
 export const click = element => element.props.onClick();
+export const predicateByProp = (propName, value) => element => element.props[propName] === value;
 
 export const childrenOf = element => {
   if (typeof element === 'string') return []
@@ -44,5 +45,6 @@ export const createShallowRenderer = () => {
     elementMatching: matcherFn => {
       return elementsMatching(renderer.getRenderOutput(), matcherFn)[0]
     },
+    root: () => renderer.getRenderOutput()
   };
 };
