@@ -119,4 +119,8 @@ components. Instead, we'd simply see clickable DOM elements, so we couldn't even
 right elements were displayed. \
 The second reason is that you don't need to wrap your component under test in a Router. This is a
 requirement of the Link, Route, and Switch components. While that is a wonderful feature at runtime,
-in our tests it's simply noise.
+in our tests it's simply noise. \
+The spy doesn't actually trigger a page change. When we use shallow rendering, a Switch component won't do any
+routing at all. We have to mimic that in our tests.
+
+If you really want to see the Switch in action, you'll need to use mount to render your component.
