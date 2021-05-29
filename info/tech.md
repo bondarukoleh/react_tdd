@@ -124,3 +124,17 @@ The spy doesn't actually trigger a page change. When we use shallow rendering, a
 routing at all. We have to mimic that in our tests.
 
 If you really want to see the Switch in action, you'll need to use mount to render your component.
+
+*expect-redux* lib to test Redux interactions. This allows us to write tests that are not tied to redux-saga. 
+This is a good thing! You could replace redux-saga with redux-thunk and your tests would still work.
+
+Tests that returns a promise not always needed to be waited for. \
+Jest is smart enough to know to wait if the test function returns a promise.
+```js
+it('sets current status to submitting', () => {
+    dispatchRequest();
+    return expectRedux(store)
+      .toDispatchAnAction()
+      .matching({type: 'ADD_CUSTOMER_SUBMITTING'});
+});
+```
