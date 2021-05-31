@@ -1,19 +1,18 @@
-import {createStore, applyMiddleware, compose} from 'redux';
+import {createStore, applyMiddleware, compose, combineReducers} from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import {takeLatest} from "redux-saga/effects";
-import {addCustomer} from './sagas/customer';
+import {addCustomer, customerReducer} from './sagas/customer';
+import {Actions} from "./sagas/constans";
 
 function* rootSaga() {
-  yield takeLatest('ADD_CUSTOMER_REQUEST', addCustomer);
+  yield takeLatest(Actions.ADD_CUSTOMER_REQUEST, addCustomer);
 }
 
 export const configureStore = (storeEnhancers = []) => {
   const sagaMiddleware = createSagaMiddleware();
   const store = createStore(
-    (state, _) => state,
-    compose(
-      ...[applyMiddleware(sagaMiddleware), ...storeEnhancers]
-    )
+    combineReducers({customer: customerReducer}),
+    compose(...[applyMiddleware(sagaMiddleware), ...storeEnhancers])
   );
   sagaMiddleware.run(rootSaga);
   return store;

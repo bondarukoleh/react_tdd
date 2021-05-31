@@ -138,3 +138,15 @@ it('sets current status to submitting', () => {
       .matching({type: 'ADD_CUSTOMER_SUBMITTING'});
 });
 ```
+
+**whatwg-fetch**
+This package-polyfill allows us to use `window.fetch` when we are running some front end code that uses Browser API on
+the Node backend, e.g. for testing purpose.
+So *that below* code in you tests works we need `import 'whatwg-fetch'`;
+```js
+import 'whatwg-fetch';
+
+jest.spyOn(window, 'fetch');
+/* do some request */
+expect(window.fetch).toHaveBeenCalledWith('/customers', {/*...*/});
+```
