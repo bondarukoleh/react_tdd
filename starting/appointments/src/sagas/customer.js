@@ -11,7 +11,7 @@ const fetch = (url, data) => {
 };
 
 export function* addCustomer({customer}) {
-  yield put({type: 'ADD_CUSTOMER_SUBMITTING'});
+  yield put({type: Actions.ADD_CUSTOMER_SUBMITTING});
   const result = yield call(fetch, '/customers', customer);
   if (result?.ok) {
     const customerWithId = yield call([result, 'json']);

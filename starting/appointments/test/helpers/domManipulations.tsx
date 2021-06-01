@@ -1,8 +1,12 @@
+import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as ReactTestUtils from 'react-dom/test-utils';
 import {ReactElement} from "react";
 import {EventSimulator} from "react-dom/test-utils";
 const {act} = ReactTestUtils;
+import {Provider} from 'react-redux';
+import {storeSpy} from 'expect-redux';
+import {configureStore} from '../../src/store';
 
 type CreateContainerT = {
   container: HTMLDivElement,
@@ -83,3 +87,20 @@ export const createContainer = (): CreateContainerT => {
 export const withEvent = (name, value) => ({
   target: { name, value }
 });
+
+export const createContainerWithStore = () => {
+  const store = configureStore([storeSpy]);
+  const container = createContainer();
+  return {
+    ...container,
+    store,
+    renderWithStore: component => {
+      act(() => {
+        ReactDOM.render(
+          <Provider store={store}>{component}</Provider>,
+          container.container
+        );
+      });
+    }
+  };
+};

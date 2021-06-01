@@ -139,6 +139,10 @@ it('sets current status to submitting', () => {
 });
 ```
 
+`toDispatchAnAction()` from expect-redux checks that action was dispatched with following predicates, 
+`toNotDispatchAnAction(timeout)` - checks that action was not dispatched during timeout (watch the timeout,
+can be false positive result).  
+
 **whatwg-fetch**
 This package-polyfill allows us to use `window.fetch` when we are running some front end code that uses Browser API on
 the Node backend, e.g. for testing purpose.
@@ -150,3 +154,11 @@ jest.spyOn(window, 'fetch');
 /* do some request */
 expect(window.fetch).toHaveBeenCalledWith('/customers', {/*...*/});
 ```
+
+Unlike with React Router, with Redux we generally prefer to use **full rendering** over shallow rendering. \
+Unlike React Router, Redux isn't rendering components, so we don't need to assert that specific Redux components
+are part of the React component instance graph. \
+Redux actions perform a variety of user-defined operations when they are dispatched. We'd like to be able to run them
+within our tests so that we can assert our interactions, it is different from the Router API, e.g. history prop,
+which has fixed behavior. \
+To test our components, we need to render each component wrapped in a `Provider` component.
