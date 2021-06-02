@@ -13,7 +13,7 @@ describe('AppointmentFormLoader', () => {
   beforeEach(() => {
     ({asyncRender, container} = createContainer());
     fetchSpy = jest.spyOn(window, 'fetch').mockReturnValue(fetchResponseOk(availableTimeSlots));
-    AppointmentFormSpy = jest.spyOn(AppointmentFormExports, 'AppointmentForm').mockReturnValue(null);
+    AppointmentFormSpy = AppointmentFormExports.AppointmentForm = jest.fn(() => null);
   });
   afterEach(() => {
     fetchSpy.mockRestore();

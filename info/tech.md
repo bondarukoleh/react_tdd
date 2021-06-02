@@ -162,3 +162,15 @@ Redux actions perform a variety of user-defined operations when they are dispatc
 within our tests so that we can assert our interactions, it is different from the Router API, e.g. history prop,
 which has fixed behavior. \
 To test our components, we need to render each component wrapped in a `Provider` component.
+
+Unfortunately, `spyOn` does not work with functions that are wrapped with the `connect` function. `connect` doesn't
+return a function itself but instead, an object that React understands. So you cannot stub a component linked with redux
+that easy:
+```js
+AppointmentFormSpy = jest.spyOn(AppointmentFormExports, 'AppointmentForm').mockReturnValue(null);
+
+// But we can stub the component like this instead:
+AppointmentFormExports.AppointmentForm = jest.fn(() => null);
+```
+
+

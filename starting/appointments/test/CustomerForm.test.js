@@ -152,6 +152,7 @@ describe('CustomerForm', () => {
     expect(fetchSpy).toHaveBeenCalled();
   });
 
+  /*Save this as an example of mocking the function
   it('notifies onSave when form is submitted', async () => {
     const customer = {firstName: 'Oleh'};
     fetchSpy.mockImplementationOnce(() => fetchResponseOk(customer));
@@ -161,6 +162,7 @@ describe('CustomerForm', () => {
     expect(saveSpy).toHaveBeenCalled();
     expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining(customer));
   });
+  */
 
   it('does not notify onSave if the POST request returns an error', async () => {
     const saveSpy = jest.fn();
@@ -228,11 +230,7 @@ describe('CustomerForm', () => {
   });
 
   describe('validation', () => {
-    const itInvalidatesFieldWithValue = (
-      fieldName,
-      value,
-      description
-    ) => {
+    const itInvalidatesFieldWithValue = (fieldName, value, description) => {
       it(`displays error after blur when ${fieldName} field is '${value}'`, () => {
         renderWithStore(<CustomerForm {...validCustomer} />);
 
@@ -278,13 +276,13 @@ describe('CustomerForm', () => {
 
   it('displays indicator when form is submitting', async () => {
     renderWithStore(<CustomerForm {...validCustomer} />);
-    /* We need sync act here to not wait for the submit to finish, to get the submitting loader (indicator) */
-    act(() => {
-      ReactTestUtils.Simulate.submit(getForm('customer'));
-    });
-    await act(async () => {
-      expect(getElement('.submittingIndicator')).not.toBeNull();
-    });
+    /* I'm keeping old code here just as example */
+    // /* We need sync act here to not wait for the submit to finish, to get the submitting loader (indicator) */
+    // act(() => {
+    //   ReactTestUtils.Simulate.submit(getForm('customer'));
+    // });
+    store.dispatch({type: Actions.ADD_CUSTOMER_SUBMITTING});
+    expect(getElement('.submittingIndicator')).not.toBeNull();
   });
 
   it('initially does not display the submitting indicator', () => {
@@ -294,18 +292,16 @@ describe('CustomerForm', () => {
 
   it('hides indicator when form has submitted', async () => {
     renderWithStore(<CustomerForm {...validCustomer} />);
-    fetchSpy.mockReturnValue(fetchResponseOk());
-    await submit(getForm('customer'));
+    store.dispatch({type: Actions.ADD_CUSTOMER_SUBMITTING});
+    expect(getElement('.submittingIndicator')).not.toBeNull();
+
+    store.dispatch({type: Actions.ADD_CUSTOMER_SUCCESSFUL});
     expect(getElement('.submittingIndicator')).toBeNull();
   });
 
   it('submit button disabled when form submitting', async () => {
     renderWithStore(<CustomerForm {...validCustomer} />);
-    act(() => {
-      ReactTestUtils.Simulate.submit(getForm('customer'));
-    });
-    await act(async () => {
-      expect(getElement('input[type="submit"]').disabled).toEqual(true);
-    });
+    store.dispatch({type: Actions.ADD_CUSTOMER_SUBMITTING});
+    expect(getElement('input[type="submit"]').disabled).toEqual(true);
   });
 });

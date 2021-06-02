@@ -1,26 +1,28 @@
 import React from 'react';
-import { createContainer, withEvent } from './helpers/domManipulations';
+import {createContainerWithStore, withEvent} from './helpers/domManipulations';
 import {fetchResponseOk, fetchResponseError, fetchRequestBodyOf } from './helpers/spyHelpers';
-import { AppointmentForm } from '../src/components/AppointmentForm';
+import {AppointmentForm} from '../src/components/AppointmentForm';
 import 'whatwg-fetch';
+import {Actions} from "../src/sagas/constans";
 
 describe('AppointmentForm', () => {
-  let render, getFormField, labelFor, startsAtField, getForm, getElement, change, submit, fetchSpy, asyncRender;
+  let renderWithStore, store, getFormField, labelFor, startsAtField, getForm, getElement, change, submit, fetchSpy, asyncRender;
   const formId = 'appointment';
   const customer = { id: 123 };
 
   beforeEach(() => {
-    ({render,
+    ({
+      renderWithStore,
+      store,
       getFormField,
       labelFor,
       startsAtField,
-      render,
       getForm,
       getElement,
       change,
       submit,
-      asyncRender
-    } = createContainer());
+      asyncRender,
+    } = createContainerWithStore());
     fetchSpy = jest.spyOn(window, 'fetch');
   });
 
@@ -36,35 +38,36 @@ describe('AppointmentForm', () => {
   ];
 
   it('renders a form', () => {
-    render(<AppointmentForm />);
+    renderWithStore(<AppointmentForm />);
     expect(getForm(formId)).not.toBeNull();
   });
 
   it('has a submit button', () => {
-    render(<AppointmentForm />);
+    renderWithStore(<AppointmentForm />);
     const submitButton = getElement('input[type="submit"]');
     expect(submitButton).not.toBeNull();
   });
 
   const itRendersAsASelectBox = fieldName => {
     it('renders as a select box', () => {
-      render(<AppointmentForm />);
+      renderWithStore(<AppointmentForm />);
       expect(getFormField({formId, name: fieldName})).not.toBeNull();
       expect(getFormField({formId, name: fieldName}).tagName).toEqual('SELECT');
     });
   };
 
-  const itInitiallyHasABlankValueChosen = fieldName =>
+  const itInitiallyHasABlankValueChosen = fieldName => {
     it('initially has a blank value chosen', () => {
-      render(<AppointmentForm />);
+      renderWithStore(<AppointmentForm />);
       const firstNode = getFormField({formId, name: fieldName}).childNodes[0];
       expect(firstNode.value).toEqual('');
       expect(firstNode.selected).toBeTruthy();
-    });
+    })
+  };
 
   const itPreselectsExistingValue = (fieldName, props, existingValue) => {
     it('pre-selects the existing value', () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           {...props}
           {...{ [fieldName]: existingValue }}
@@ -77,7 +80,7 @@ describe('AppointmentForm', () => {
 
   const itRendersALabel = (fieldName, text) => {
     it('renders a label', () => {
-      render(<AppointmentForm />);
+      renderWithStore(<AppointmentForm />);
       expect(labelFor(fieldName)).not.toBeNull();
       expect(labelFor(fieldName).textContent).toEqual(text);
     });
@@ -85,7 +88,7 @@ describe('AppointmentForm', () => {
 
   const itAssignsAnIdThatMatchesTheLabelId = fieldName => {
     it('assigns an id that matches the label id', () => {
-      render(<AppointmentForm />);
+      renderWithStore(<AppointmentForm />);
       expect(getFormField({formId, name: fieldName}).id).toEqual(fieldName);
     });
   };
@@ -94,7 +97,7 @@ describe('AppointmentForm', () => {
     it('saves existing value when submitted', async () => {
       const submitSpy = jest.fn();
       fetchSpy.mockImplementationOnce(() => fetchResponseOk())
-      render(
+      renderWithStore(
         <AppointmentForm
           {...{ [fieldName]: value}}
           customer={customer}
@@ -110,7 +113,7 @@ describe('AppointmentForm', () => {
     it('saves new value when submitted', async () => {
       const submitSpy = jest.fn();
       fetchSpy.mockImplementationOnce(() => fetchResponseOk())
-      render(
+      renderWithStore(
         <AppointmentForm
           {...{ [fieldName]: existingValue }}
           customer={customer}
@@ -141,7 +144,7 @@ describe('AppointmentForm', () => {
     it('lists all salon services', () => {
       const selectableServices = ['Cut', 'Blow-dry'];
 
-      render(
+      renderWithStore(
         <AppointmentForm selectableServices={selectableServices} />
       );
 
@@ -171,7 +174,7 @@ describe('AppointmentForm', () => {
         '1': ['A', 'B']
       };
 
-      render(
+      renderWithStore(
         <AppointmentForm
           selectableServices={selectableServices}
           selectableStylists={selectableStylists}
@@ -193,12 +196,12 @@ describe('AppointmentForm', () => {
 
   describe('time slot table', () => {
     it('renders a table for time slots', () => {
-      render(<AppointmentForm />);
+      renderWithStore(<AppointmentForm />);
       expect(timeSlotTable()).not.toBeNull();
     });
 
     it('renders a time slot for every half an hour between open and close times', () => {
-      render(
+      renderWithStore(
         <AppointmentForm salonOpensAt={9} salonClosesAt={11} />
       );
       const timesOfDay = timeSlotTable().querySelectorAll(
@@ -211,7 +214,7 @@ describe('AppointmentForm', () => {
     });
 
     it('renders an empty cell at the start of the header row', () => {
-      render(<AppointmentForm />);
+      renderWithStore(<AppointmentForm />);
       const headerRow = timeSlotTable().querySelector(
         'thead > tr'
       );
@@ -220,7 +223,7 @@ describe('AppointmentForm', () => {
 
     it('renders a week of available dates', () => {
       const today = new Date(2018, 11, 1);
-      render(<AppointmentForm today={today} />);
+      renderWithStore(<AppointmentForm today={today} />);
       const dates = timeSlotTable().querySelectorAll(
         'thead >* th:not(:first-child)'
       );
@@ -231,7 +234,7 @@ describe('AppointmentForm', () => {
     });
 
     it('renders a radio button for each time slot', () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
@@ -247,13 +250,13 @@ describe('AppointmentForm', () => {
     });
 
     it('does not render radio buttons for unavailable time slots', () => {
-      render(<AppointmentForm availableTimeSlots={[]} />);
+      renderWithStore(<AppointmentForm availableTimeSlots={[]} />);
       const timesOfDay = timeSlotTable().querySelectorAll('input');
       expect(timesOfDay).toHaveLength(0);
     });
 
     it('sets radio button values to the startsAt value of the corresponding appointment', () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
@@ -268,7 +271,7 @@ describe('AppointmentForm', () => {
     });
 
     it('pre-selects the existing value', () => {
-      render(
+      renderWithStore(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
@@ -281,7 +284,7 @@ describe('AppointmentForm', () => {
     it('saves existing value when submitted', async () => {
       const submitSpy = jest.fn();
       fetchSpy.mockImplementationOnce(() => fetchResponseOk())
-      render(
+      renderWithStore(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
@@ -297,7 +300,7 @@ describe('AppointmentForm', () => {
     it('saves new value when submitted', async () => {
       const submitSpy = jest.fn();
       fetchSpy.mockImplementationOnce(() => fetchResponseOk())
-      render(
+      renderWithStore(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
@@ -323,7 +326,7 @@ describe('AppointmentForm', () => {
         }
       ];
 
-      render(
+      renderWithStore(
         <AppointmentForm
           availableTimeSlots={availableTimeSlots}
           today={today}
@@ -344,15 +347,7 @@ describe('AppointmentForm', () => {
   });
 
   it('calls fetch with the right properties when submitting data', async () => {
-    render(
-      <AppointmentForm
-        availableTimeSlots={availableTimeSlots}
-        today={today}
-        startsAt={availableTimeSlots[0].startsAt}
-        onSubmit={() => {}}
-        customer={customer}
-      />
-    );
+    renderWithStore(<AppointmentForm availableTimeSlots={availableTimeSlots}/>);
     change(startsAtField(1), withEvent('startsAt', availableTimeSlots[1].startsAt.toString()));
     await submit(getForm(formId));
 
@@ -361,14 +356,13 @@ describe('AppointmentForm', () => {
         method: 'POST',
         credentials: 'same-origin',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({"startsAt": availableTimeSlots[1].startsAt, customer: customer.id})
       })
     );
   });
 
   it('prevents the default action when submitting the form', async () => {
     fetchSpy.mockImplementation(() => fetchResponseOk({}));
-    render(
+    renderWithStore(
       <AppointmentForm
         availableTimeSlots={availableTimeSlots}
         today={today}
@@ -386,7 +380,7 @@ describe('AppointmentForm', () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseOk({}));
     const onSubmitSpy = jest.fn();
 
-    render(<AppointmentForm onSubmit={onSubmitSpy} customer={customer}/>);
+    renderWithStore(<AppointmentForm onSubmit={onSubmitSpy} customer={customer}/>);
     await submit(getForm(formId));
 
     expect(onSubmitSpy).toHaveBeenCalled();
@@ -394,7 +388,7 @@ describe('AppointmentForm', () => {
 
   it('renders error message when fetch call fails', async () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
-    render(<AppointmentForm customer={customer}/>);
+    renderWithStore(<AppointmentForm customer={customer}/>);
     await submit(getForm(formId));
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
@@ -403,7 +397,7 @@ describe('AppointmentForm', () => {
 
   it('state is cleared when the form is submitted again', async () => {
     fetchSpy.mockImplementationOnce(() => fetchResponseError());
-    render(<AppointmentForm  onSubmit={() => {}} customer={customer}/>);
+    renderWithStore(<AppointmentForm  onSubmit={() => {}} customer={customer}/>);
     await submit(getForm(formId));
     const errorElement = getElement('.error');
     expect(errorElement).not.toBeNull();
@@ -414,8 +408,12 @@ describe('AppointmentForm', () => {
   });
 
   it('passes the customer id to fetch when submitting', async () => {
-    const customer = { id: 123 };
-    render(<AppointmentForm customer={customer}  onSubmit={() => {}}/>);
+    renderWithStore(<AppointmentForm />);
+    fetchSpy.mockReset();
+    store.dispatch({
+      type: Actions.SET_CUSTOMER_FOR_APPOINTMENT,
+      customer
+    })
     await submit(getForm(formId));
     expect(fetchRequestBodyOf(fetchSpy)).toMatchObject({customer: customer.id});
   });

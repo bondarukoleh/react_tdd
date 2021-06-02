@@ -1,7 +1,7 @@
 import 'whatwg-fetch';
 import {storeSpy, expectRedux} from 'expect-redux';
 import {configureStore} from '../../src/store';
-import {customerReducer as reducer} from '../../src/sagas/customer';
+import {customerReducer as reducer} from '../../src/reducers/customerReducer';
 import {fetchResponseError, fetchResponseOk} from '../helpers/spyHelpers';
 import {Actions, CustomerStatuses} from "../../src/sagas/constans";
 import {itMaintainsExistingState, itSetsStatus} from '../helpers/reducerGenerators';

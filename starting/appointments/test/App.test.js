@@ -108,6 +108,7 @@ describe('App', () => {
       render(
         <App
           history={{ push: historySpy }}
+          setCustomerForAppointment={dispatchSpy}
         />
       );
       const customerSearch = routeFor(Routes.searchCustomers).props.render();

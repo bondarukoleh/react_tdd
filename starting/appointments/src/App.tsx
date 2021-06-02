@@ -6,6 +6,8 @@ import {CustomerForm} from './components/CustomerForm';
 import {AppointmentFormLoader} from "./containers/AppointmentFormLoader";
 import {CustomerSearch} from "./components/CustomerSearch";
 import {Link, Redirect, Route, Switch} from 'react-router-dom'
+import {connect} from "react-redux";
+import {Actions} from "./sagas/constans";
 
 export enum Routes {
   dayView = '/',
@@ -39,11 +41,10 @@ export const MainScreen = () => {
 }
 
 export const App = (props) => {
-  const [customer, setCustomer] = useState(null);
 
   const customerSave = useCallback(
     (customerData) => {
-      setCustomer(customerData);
+      props.setCustomerForAppointment(customerData);
       props.history.push(Routes.addAppointment)
     },
     []
@@ -72,13 +73,14 @@ export const App = (props) => {
     <Switch>
       <Route
         path={Routes.addCustomer}
-        render={(props) => <CustomerForm {...props} onSave={customerSave} {...customer} />}
+        // @ts-ignore
+        render={(props) => <CustomerForm {...props} onSave={customerSave} />}
         exact
       />
       <Route
         path={Routes.addAppointment}
         exact
-        render={(props) => <AppointmentFormLoader {...props} customer={customer} onSubmit={appointmentSubmit} />}
+        render={(props) => <AppointmentFormLoader {...props} onSubmit={appointmentSubmit} />}
       />
       <Route
         path={Routes.searchCustomers}
@@ -93,3 +95,15 @@ export const App = (props) => {
     </Switch>
   );
 };
+
+const mapDispatchToProps = {
+  setCustomerForAppointment: customer => ({
+    type: Actions.SET_CUSTOMER_FOR_APPOINTMENT,
+    customer
+  })
+};
+
+export const ConnectedApp = connect(
+  null,
+  mapDispatchToProps
+)(App);

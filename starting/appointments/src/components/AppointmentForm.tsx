@@ -1,12 +1,11 @@
 import * as React from "react";
 import {useState, useCallback} from 'react';
+import {connect} from "react-redux";
 
 const timeIncrements = (numTimes, startTime, increment) =>
   Array(numTimes)
     .fill([startTime])
-    .reduce((acc, _, i) =>
-      acc.concat([startTime + i * increment])
-    );
+    .reduce((acc, _, i) => acc.concat([startTime + i * increment]));
 
 const dailyTimeSlots = (salonOpensAt, salonClosesAt) => {
   const totalSlots = (salonClosesAt - salonOpensAt) * 2;
@@ -106,7 +105,7 @@ const TimeSlotTable = ({
   );
 };
 
-export const AppointmentForm = ({
+export const AppointmentFormEl = ({
                                   selectableServices,
                                   service,
                                   selectableStylists,
@@ -212,7 +211,7 @@ export const AppointmentForm = ({
   );
 };
 
-AppointmentForm.defaultProps = {
+AppointmentFormEl.defaultProps = {
   availableTimeSlots: [],
   today: new Date(),
   salonOpensAt: 9,
@@ -235,3 +234,11 @@ AppointmentForm.defaultProps = {
     Extensions: ['Ashley', 'Pat']
   }
 };
+
+const mapStateToProps = (state) => {
+  return {
+    customer: state.appointment.customer
+  }
+};
+
+export const AppointmentForm = connect(mapStateToProps, null)(AppointmentFormEl)
