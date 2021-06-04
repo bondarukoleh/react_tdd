@@ -4,13 +4,13 @@ import {BrowserRouter as Router} from 'react-router-dom';
 import 'whatwg-fetch';
 import './styles.css';
 import {App} from "./App";
-import {createBrowserHistory} from 'history';
+import {appHistory} from './history';
 import {Provider} from 'react-redux';
 import {configureStore} from './store';
 
 ReactDOM.render(
   <Provider store={configureStore()}>
-    <Router history={createBrowserHistory()}>
+    <Router history={appHistory}>
       <App/>
     </Router>
   </Provider>,

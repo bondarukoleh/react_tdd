@@ -124,11 +124,19 @@ describe('App', () => {
       expect(button.props.children).toEqual('Create appointment');
     });
 
+    it('dispatches SET_CUSTOMER_FOR_APPOINTMENT when clicking the Create appointment button', async () => {
+      const button = childrenOf(renderSearchActionsForCustomer(customer))[0];
+      click(button);
+      expect(dispatchSpy).toHaveBeenCalledWith(customer);
+    });
+
+    /* Moved to Connected app container tests
     it('navigates to /addAppointment when clicking the Create appointment button', () => {
       const button = childrenOf(renderSearchActionsForCustomer(customer))[0];
       click(button);
       expect(historySpy).toHaveBeenCalledWith(Routes.addAppointment);
     });
+    * */
   });
 });
 
@@ -195,13 +203,14 @@ describe.skip('App', () => {
     expect(elementMatching(predicateByType(AppointmentFormLoader))).toBeDefined();
   });
 
+  /* Moved to connect app tests
   it('passes the customer to the AppointmentForm', async () => {
     render(<App/>);
     const customer = {id: 123};
     clickAddCustomer();
     saveCustomer(customer);
     expect(elementMatching(predicateByType(AppointmentFormLoader)).props.customer).toBe(customer);
-  });
+  });*/
 
   it('renders AppointmentDayViewLoader after AppointmentForm is submitted', async () => {
     render(<App/>);
