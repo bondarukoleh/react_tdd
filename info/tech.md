@@ -209,3 +209,6 @@ import {
 jest.mock('relay-runtime');
 ```
 
+Relay provides a `QueryRenderer` component that can call your GraphQL endpoint directly. This can sometimes be
+a simpler, less complicated way of handling your data than using Redux, but since we're already using Redux for
+all our data access.

@@ -10,6 +10,8 @@ import {appointmentReducer} from "./reducers/appointmentReducer";
 function* rootSaga() {
   yield takeLatest(Actions.ADD_CUSTOMER_REQUEST, addCustomer);
   yield takeLatest(Actions.ADD_CUSTOMER_SUCCESSFUL, customerAdded);
+  yield takeLatest(Actions.ADD_APPOINTMENT_REQUEST, addAppointment);
+  yield takeLatest(Actions.ADD_APPOINTMENT_SUCCESSFUL, appointmentAdded);
 }
 
 export const configureStore = (storeEnhancers = []) => {

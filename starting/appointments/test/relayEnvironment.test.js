@@ -8,6 +8,7 @@ import {
   RecordSource
 } from 'relay-runtime';
 
+/* MOCKING RELAY */
 jest.mock('relay-runtime');
 
 describe('performFetch', () => {
@@ -51,12 +52,37 @@ describe('performFetch', () => {
 
 describe('getEnvironment', () => {
   const environment = {a: 123};
+  const network = { b: 234 };
+  const store = { c: 345 };
+  const recordSource = { d: 456 };
+
   beforeAll(() => {
     Environment.mockImplementation(() => environment);
+    Network.create.mockReturnValue(network);
+    Store.mockImplementation(() => store);
+    RecordSource.mockImplementation(() => recordSource);
+
     getEnvironment();
   });
 
   it('returns environment', () => {
     expect(getEnvironment()).toEqual(environment);
+  });
+
+  it('calls Environment with network and store', () => {
+    expect(Environment).toHaveBeenCalledWith({ network, store });
+  });
+
+  it('calls Network.create with performFetch', () => {
+    expect(Network.create).toHaveBeenCalledWith(performFetch);
+  });
+
+  it('calls Store with RecordSource', () => {
+    expect(Store).toHaveBeenCalledWith(recordSource);
+  });
+
+  it('constructs the object only once', () => {
+    getEnvironment();
+    expect(Environment.mock.calls.length).toEqual(1);
   });
 });
