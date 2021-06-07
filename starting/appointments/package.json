@@ -12,7 +12,8 @@
     "build-server": "webpack --config webpack-server.config.js",
     "test-server": "jest --config server/jest.json",
     "test-server-special": "jest --config server/jest.json -t \"App\"",
-    "serve": "node dist/server/server.js"
+    "serve": "node dist/server/server.js",
+    "relay": "relay-compiler --src ./src --schema ./src/schema.graphql --watchman false"
   },
   "keywords": [],
   "author": "",
