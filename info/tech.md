@@ -173,4 +173,39 @@ AppointmentFormSpy = jest.spyOn(AppointmentFormExports, 'AppointmentForm').mockR
 AppointmentFormExports.AppointmentForm = jest.fn(() => null);
 ```
 
+### GraphQL
+It offers an alternative mechanism for fetching data, but it's not just a drop-in replacement for the fetch API.
+In providing a layer of abstraction above HTTP calls, it offers a whole bunch of additional features that can be added.
+
+We'll use the bare-bones GraphQL `Relay` library to connect to our backend. \
+```shell
+npm i -E react-relay && npm i -DE babel-plugin-relay relay-compiler
+```
+
+You'll also need to update your .babelrc file to include the Babel plugin:
+```json
+{
+  "presets": ["@babel/env", "@babel/react"],
+  "plugins": ["@babel/transform-runtime", "relay"]
+}
+```
+
+The core of Relay is the fetchQuery function. This function sends requests to your GraphQL endpoint.
+
+Environment object requires a whole bunch of other Relay types to be constructed. These types come directly from the
+`relay` package. In order to stub them out, we'll need to create a module mock with the jest.mock function.
+This function is special in that it is hoisted to the top of the file and will replace all functions and classes
+within that module before anything has a chance to load the file. At the same time, we also need to import all of
+the original functions ourselves so that we can spy on them in our tests.
+
+```js
+import {
+  Environment,
+  Network,
+  Store,
+  RecordSource
+} from 'relay-runtime';
+
+jest.mock('relay-runtime');
+```
 
