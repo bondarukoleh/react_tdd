@@ -1,48 +1,68 @@
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import ReactDOM from 'react-dom';
 import { createContainerWithStore } from './domManipulators';
+import {
+  horizontalLine,
+  verticalLine,
+  diagonalLine
+} from './sampleLines';
 import * as TurtleModule from '../src/Turtle';
+import * as StaticLinesModule from '../src/StaticLines';
+import * as AnimatedLineModule from '../src/AnimatedLine';
 import { Drawing } from '../src/Drawing';
 
-const horizontalLine = {
-  drawCommand: 'drawLine',
-  id: 123,
-  x1: 100,
-  y1: 100,
-  x2: 200,
-  y2: 100
-};
-const verticalLine = {
-  drawCommand: 'drawLine',
-  id: 234,
-  x1: 200,
-  y1: 100,
-  x2: 200,
-  y2: 200
-};
-const diagonalLine = {
-  drawCommand: 'drawLine',
-  id: 235,
-  x1: 200,
-  y1: 200,
-  x2: 300,
-  y2: 300
+const rotate90 = {
+  drawCommand: 'rotate',
+  id: 456,
+  previousAngle: 0,
+  newAngle: 90
 };
 
 describe('Drawing', () => {
-  let container, renderWithStore, turtleSpy;
-  let store;
+  const cancelToken = 'cancelToken';
+  let container, renderWithStore;
 
   beforeEach(() => {
     ({ container, renderWithStore } = createContainerWithStore());
-    turtleSpy = jest.spyOn(TurtleModule, 'Turtle');
-    turtleSpy.mockReturnValue(<div id="turtle" />);
+    jest
+      .spyOn(TurtleModule, 'Turtle')
+      .mockReturnValue(<div id="turtle" />);
+    jest
+      .spyOn(window, 'requestAnimationFrame')
+      .mockReturnValue(cancelToken);
+    jest.spyOn(window, 'cancelAnimationFrame');
+    jest
+      .spyOn(AnimatedLineModule, 'AnimatedLine')
+      .mockReturnValue(<div id="animatedLine" />);
+    jest
+      .spyOn(StaticLinesModule, 'StaticLines')
+      .mockReturnValue(<div id="staticLines" />);
+  });
+
+  afterEach(() => {
+    window.requestAnimationFrame.mockReset();
+    window.cancelAnimationFrame.mockReset();
+    AnimatedLineModule.AnimatedLine.mockReset();
   });
 
   const svg = () => container.querySelector('svg');
   const line = () => container.querySelector('line');
   const allLines = () => container.querySelectorAll('line');
   const polygon = () => container.querySelector('polygon');
+
+  const triggerRequestAnimationFrame = time => {
+    act(() => {
+      const lastCall =
+        window.requestAnimationFrame.mock.calls.length - 1;
+      const frameFn =
+        window.requestAnimationFrame.mock.calls[lastCall][0];
+      frameFn(time);
+    });
+  };
+
+  const triggerAnimationSequence = times =>
+    times.forEach(triggerRequestAnimationFrame);
 
   it('renders an svg inside div#viewport', () => {
     renderWithStore(<Drawing />, { script: { drawCommands: [] } });
@@ -62,48 +82,6 @@ describe('Drawing', () => {
     );
   });
 
-  it('renders a line with the line coordinates', () => {
-    renderWithStore(<Drawing />, {
-      script: { drawCommands: [horizontalLine] }
-    });
-    expect(line()).not.toBeNull();
-    expect(line().getAttribute('x1')).toEqual('100');
-    expect(line().getAttribute('y1')).toEqual('100');
-    expect(line().getAttribute('x2')).toEqual('200');
-    expect(line().getAttribute('y2')).toEqual('100');
-  });
-
-  it('sets a stroke width of 2', () => {
-    renderWithStore(<Drawing />, {
-      script: { drawCommands: [horizontalLine] }
-    });
-    expect(line().getAttribute('stroke-width')).toEqual('2');
-  });
-
-  it('sets a stroke color of black', () => {
-    renderWithStore(<Drawing />, {
-      script: { drawCommands: [horizontalLine] }
-    });
-    expect(line().getAttribute('stroke')).toEqual('black');
-  });
-
-  it('draws every drawLine command', () => {
-    renderWithStore(<Drawing />, {
-      script: {
-        drawCommands: [horizontalLine, verticalLine, diagonalLine]
-      }
-    });
-    expect(allLines().length).toEqual(3);
-  });
-
-  it('does not draw any commands for non-drawLine commands', () => {
-    const unknown = { drawCommand: 'unknown' };
-    renderWithStore(<Drawing />, {
-      script: { drawCommands: [unknown] }
-    });
-    expect(line()).toBeNull();
-  });
-
   it('renders a Turtle within the svg', () => {
     renderWithStore(<Drawing />);
     expect(
@@ -112,13 +90,262 @@ describe('Drawing', () => {
   });
 
   it('passes the turtle x, y and angle as props to Turtle', () => {
-    const turtle = { x: 10, y: 20, angle: 30 };
-    renderWithStore(<Drawing />, {
-      script: { drawCommands: [], turtle }
-    });
-    expect(turtleSpy).toHaveBeenCalledWith(
-      { x: 10, y: 20, angle: 30 },
+    renderWithStore(<Drawing />);
+    expect(TurtleModule.Turtle).toHaveBeenCalledWith(
+      { x: 0, y: 0, angle: 0 },
       {}
     );
+  });
+
+  it('renders StaticLines within the svg', () => {
+    const spy = jest.spyOn(StaticLinesModule, 'StaticLines');
+    spy.mockReturnValue(<div id="staticLines" />);
+    renderWithStore(<Drawing />);
+    expect(
+      container.querySelector('svg > div#staticLines')
+    ).not.toBeNull();
+  });
+
+  it('does not render AnimatedLine when not moving', () => {
+    renderWithStore(<Drawing />, { script: { drawCommands: [] } });
+    expect(AnimatedLineModule.AnimatedLine).not.toHaveBeenCalled();
+  });
+
+  describe('movement animation', () => {
+    beforeEach(() => {
+      renderWithStore(<Drawing />, {
+        script: { drawCommands: [horizontalLine] }
+      });
+    });
+
+    it('invokes requestAnimationFrame when the timeout fires', () => {
+      expect(window.requestAnimationFrame).toHaveBeenCalled();
+    });
+
+    it('renders an AnimatedLine with turtle at the start position when the animation has run for 0s', () => {
+      triggerRequestAnimationFrame(0);
+      expect(AnimatedLineModule.AnimatedLine).toHaveBeenCalledWith(
+        {
+          commandToAnimate: horizontalLine,
+          turtle: { x: 100, y: 100, angle: 0 }
+        },
+        expect.anything()
+      );
+    });
+
+    it('renders an AnimatedLine with turtle at a position based on a speed of 5px per ms', () => {
+      triggerAnimationSequence([0, 250]);
+      expect(
+        AnimatedLineModule.AnimatedLine
+      ).toHaveBeenLastCalledWith(
+        {
+          commandToAnimate: horizontalLine,
+          turtle: { x: 150, y: 100, angle: 0 }
+        },
+        expect.anything()
+      );
+    });
+
+    it('calculates move distance with a non-zero animation start time', () => {
+      const startTime = 12345;
+      triggerRequestAnimationFrame(startTime);
+      triggerRequestAnimationFrame(startTime + 250);
+      expect(
+        AnimatedLineModule.AnimatedLine
+      ).toHaveBeenLastCalledWith(
+        {
+          commandToAnimate: horizontalLine,
+          turtle: { x: 150, y: 100, angle: 0 }
+        },
+        expect.anything()
+      );
+    });
+
+    it('invokes requestAnimationFrame repeatedly until the duration is reached', () => {
+      triggerAnimationSequence([0, 250, 500]);
+      expect(
+        window.requestAnimationFrame.mock.calls.length
+      ).toEqual(3);
+    });
+  });
+
+  describe('after animation', () => {
+    it('animates the next command', () => {
+      renderWithStore(<Drawing />, {
+        script: { drawCommands: [horizontalLine, verticalLine] }
+      });
+      triggerAnimationSequence([0, 500, 0, 250]);
+      expect(
+        AnimatedLineModule.AnimatedLine
+      ).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          commandToAnimate: verticalLine,
+          turtle: {
+            x: 200,
+            y: 150,
+            angle: 0
+          }
+        }),
+        expect.anything()
+      );
+    });
+
+    it('places line in StaticLines', () => {
+      renderWithStore(<Drawing />, {
+        script: { drawCommands: [horizontalLine, verticalLine] }
+      });
+      triggerRequestAnimationFrame(0);
+      triggerRequestAnimationFrame(500);
+      expect(
+        StaticLinesModule.StaticLines
+      ).toHaveBeenLastCalledWith(
+        { lineCommands: [horizontalLine] },
+        expect.anything()
+      );
+    });
+  });
+
+  it('calls cancelAnimationFrame on reset', () => {
+    renderWithStore(<Drawing />, {
+      script: { drawCommands: [horizontalLine] }
+    });
+    renderWithStore(<Drawing />, { script: { drawCommands: [] } });
+    expect(window.cancelAnimationFrame).toHaveBeenCalledWith(
+      cancelToken
+    );
+  });
+
+  it('does not call cancelAnimationFrame if no line animating', () => {
+    jest.spyOn(window, 'cancelAnimationFrame');
+    renderWithStore(<Drawing />, {
+      script: { drawCommands: [] }
+    });
+    renderWithStore(<React.Fragment />);
+    expect(window.cancelAnimationFrame).not.toHaveBeenCalled();
+  });
+
+  describe('rotation animation', () => {
+    beforeEach(() => {
+      renderWithStore(<Drawing />, {
+        script: { drawCommands: [rotate90] }
+      });
+    });
+
+    it('rotates the turtle', () => {
+      triggerAnimationSequence([0, 500]);
+      expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+        { x: 0, y: 0, angle: 90 },
+        expect.anything()
+      );
+    });
+
+    it('rotates part-way at a speed of 1s per 180 degrees', () => {
+      triggerAnimationSequence([0, 250]);
+      expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+        { x: 0, y: 0, angle: 45 },
+        expect.anything()
+      );
+    });
+
+    it('calculates rotation with a non-zero animation start time', () => {
+      const startTime = 12345;
+      triggerRequestAnimationFrame(startTime);
+      triggerRequestAnimationFrame(startTime + 250);
+      expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+        { x: 0, y: 0, angle: 45 },
+        expect.anything()
+      );
+    });
+
+    it('invokes requestAnimationFrame repeatedly until the duration is reached', () => {
+      triggerAnimationSequence([0, 250, 500]);
+      expect(
+        window.requestAnimationFrame.mock.calls.length
+      ).toEqual(3);
+    });
+  });
+
+  it('animates the next command once rotation is complete', async () => {
+    renderWithStore(<Drawing />, {
+      script: { drawCommands: [rotate90, horizontalLine] }
+    });
+    triggerAnimationSequence([0, 500, 0, 250]);
+    expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+      { x: 150, y: 100, angle: 90 },
+      expect.anything()
+    );
+  });
+
+  describe('skipping animation', () => {
+    const store = {
+      environment: { shouldAnimate: false },
+      script: {
+        drawCommands: [rotate90, horizontalLine],
+        turtle: { x: 123, y: 234, angle: 180 }
+      }
+    };
+
+    it('does not render AnimatedLine', () => {
+      renderWithStore(<Drawing />, store);
+      expect(
+        AnimatedLineModule.AnimatedLine
+      ).not.toHaveBeenCalled();
+    });
+
+    it('draws all remaining commands as StaticLines', () => {
+      renderWithStore(<Drawing />, store);
+      expect(
+        StaticLinesModule.StaticLines
+      ).toHaveBeenLastCalledWith(
+        { lineCommands: [horizontalLine] },
+        expect.anything()
+      );
+    });
+
+    it('sets the turtle at the final position', () => {
+      renderWithStore(<Drawing />, store);
+      expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+        { x: 123, y: 234, angle: 180 },
+        expect.anything()
+      );
+    });
+  });
+
+  describe('resetting', () => {
+    it('resets Turtle position and angle to all-zeros', async () => {
+      renderWithStore(<Drawing />, {
+        script: { drawCommands: [horizontalLine, rotate90] }
+      });
+      triggerAnimationSequence([0, 500, 0, 500]);
+      renderWithStore(<Drawing />, {
+        script: {
+          drawCommands: [],
+          turtle: { x: 0, y: 0, angle: 0 }
+        }
+      });
+      expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+        { x: 0, y: 0, angle: 0 },
+        expect.anything()
+      );
+    });
+  });
+
+  describe('undo', () => {
+    it('resets Turtle position to the store turtle position', () => {
+      renderWithStore(<Drawing />, {
+        script: { drawCommands: [horizontalLine, rotate90] }
+      });
+      triggerAnimationSequence([0, 500, 0, 500]);
+      renderWithStore(<Drawing />, {
+        script: {
+          drawCommands: [horizontalLine],
+          turtle: { x: 123, y: 234, angle: 90 }
+        }
+      });
+      expect(TurtleModule.Turtle).toHaveBeenLastCalledWith(
+        { x: 123, y: 234, angle: 90 },
+        expect.anything()
+      );
+    });
   });
 });

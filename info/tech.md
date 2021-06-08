@@ -217,3 +217,21 @@ Before use graphql - better use compiler to create queries:
 ```json
 "relay": "relay-compiler --src ./src --schema ./src/schema.graphql --watchman false"
 ```
+
+#### Cucumber
+Cucumber package incorporates a special test runner that runs feature files, written in a plain-English language known
+as **Gherkin**. These feature files are backed by support scripts that are written in JavaScript. Since Cucumber has
+its own test runner, it doesn't use Jest, although we will make use of Jest's expect package. The Gherkin language is
+a popular syntax for writing plain-language tests that help us collaborate with our whole team.
+It translates into JavaScript code.
+
+Within our support files, we'll use **Puppeteer** to drive a "real" web browser. Puppeteer drives only one web browser,
+Google Chrome, but may not be enough for you if you're looking for cross-platform support.
+
+To add the cucumber:
+```shell
+npm i -DE cucumber puppeteer expect @babel/register;
+
+# To run only one feature
+npx cucumber-js --require-module @babel/register features/drawing.feature:5
+```
